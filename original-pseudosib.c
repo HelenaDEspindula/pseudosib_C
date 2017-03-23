@@ -1,12 +1,13 @@
                              /* PROGRAMME DE CREATION DE PSEUDOGERMAINS */
 
+
 # define NIND 1500  /*nombre max d'individus*/
 # define NBM 100  /* nombre max de marqueurs*/
 # include <stdio.h>
  
-int main ()
-{
-  int geno [NIND][2*NBM + 6+10];
+main ()
+
+{ int geno [NIND][2*NBM + 6+10];
   int pseudo [NIND*4][2*NBM+6+10];
   int real [NIND][2*NBM+6+10];
   int type [NIND];
@@ -17,12 +18,12 @@ int main ()
 
 /*titre*/
   printf ("Caractéristiques du fichier de données à respecter pour la création de pseudogermains (pour chromosome X, utiliser un autre programme):\n");
-  printf (" -> les colonnes doivent être séparées par des espaces ou des tabulations\n");
-  printf (" -> les individus (au maximum 1500) doivent être classés par famille\n");
-  printf (" -> les premières colonnes doivent correspondre à: family_id, id, father_id, mother_id, sex, affected status, covariables (maximum 10), marqueurs (allèle1 allèle2)\n");
-  printf (" -> les id ne doivent pas comporter de caractères alphanumériques(0 si manquant)\n");
-  printf (" -> sex et affected status doivent être codés 1 ou 2 (0 si manquant)\n");
-  printf (" -> les allèles (au maximum 100 marqueurs) doivent être recodés 1 ou 2 (0 si manquant, les males sont codés comme des homozygotes)\n");
+  printf ("  les colonnes doivent être séparées par des espaces ou des tabulations\n");
+  printf ("  les individus (au maximum 1500) doivent être classés par famille\n");
+  printf ("  les premières colonnes doivent correspondre à: family_id, id, father_id, mother_id, sex, affected status, covariables (maximum 10), marqueurs (allèle1 allèle2)\n");
+  printf ("  les id ne doivent pas comporter de caractères alphanumériques(0 si manquant)\n");
+  printf ("  sex et affected status doivent être codés 1 ou 2 (0 si manquant)\n");
+  printf ("  les allèles (au maximum 100 marqueurs) doivent être recodés 1 ou 2 (0 si manquant, les males sont codés comme des homozygotes)\n");
 
 /*lecture du fichier de données et des paramètres de base*/
   printf ("\n Donner le nom du fichier à analyser: \n");
@@ -293,7 +294,5 @@ int main ()
  printf ("Les variables reportées dans %s sont, dans l'ordre:\n",ficrec);
  printf (" famille,individu, pere, mere, sexe, affected status, covariable x %d, génotype au marqueur x %d\n",cov,nbm);
  printf ("attention : en cas d'erreur mendélienne, les génotypes sont codés 0 pour tout le cluster");
-
- return (0);
 }
 
