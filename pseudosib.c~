@@ -1,6 +1,6 @@
-                             /* PROGRAMME DE CREATION DE PSEUDOGERMAINS */
+                             /* PSEUDO-SIBLINGS CREATION PROGRAM */
 
-# define NIND 1500  /*nombre max d'individus*/
+# define NIND 1500  /* nombre max d'individus*/
 # define NBM 100  /* nombre max de marqueurs*/
 # include <stdio.h>
  
@@ -11,9 +11,13 @@ int main ()
   int real [NIND][2*NBM+6+10];
   int type [NIND];
   int i=0,j,k,h,l,m, n, trio, geno_pere,geno_mere,geno_aff,geno_sain,sex_aff, sib_tdt=0,tdt=0; 
-  int nind=0, nbm=0, incomp=0, fam=0, cov, multi, aff, sain, nreal,nmulti;
-  char ficgeno[81], ficrec[81]; 
-  FILE * entree, * sortie;
+  int nind=0;
+  int nbm=0; // number of marquers
+  int incomp=0, fam=0, multi, aff, sain, nreal, nmulti;
+  int cov; // number of covariates
+  char ficgeno[81]; // name of the input file
+  char ficrec[81]; // name of the output file
+  FILE * file_in, * file_out;
 
 /*titre*/
   printf ("Caractéristiques du fichier de données à respecter pour la création de pseudogermains (pour chromosome X, utiliser un autre programme):\n");
@@ -25,24 +29,25 @@ int main ()
   printf (" -> les allèles (au maximum 100 marqueurs) doivent être recodés 1 ou 2 (0 si manquant, les males sont codés comme des homozygotes)\n");
 
 /*lecture du fichier de données et des paramètres de base*/
-  printf ("\n Donner le nom du fichier à analyser: \n");
+  printf ("\n Give the name of the file to be analyzed: \n");
   scanf ("%80s", ficgeno);
 
-  printf ("donner le nombre de marqueurs (au maximum 100)\n");
+  printf ("Give the number of markers (maximum %d)\n", NBM);
   scanf ("%d", &nbm);
 
-  printf ("donner le nombre de covariables (au maximum 10)\n");
+  printf ("Give the number of covariates (maximum %d)\n", NIND);
   scanf ("%d", &cov);
 
-  entree = fopen (ficgeno, "r");
+  file_in = fopen (ficgeno, "r");
+
   while (1)
-  	 { fscanf (entree, "%d", &geno[i][0]); 
-  	   if (feof (entree)) break;
-  	   for (j=1; j<(2*nbm + 6 + cov); j=j+1) fscanf (entree, "%d", &geno[i][j]);
+  	 { fscanf (file_in, "%d", &geno[i][0]); 
+  	   if (feof (file_in)) break;
+  	   for (j=1; j<(2*nbm + 6 + cov); j=j+1) fscanf (file_in, "%d", &geno[i][j]);
   	   i=i+1;
   	   nind=i;
   	 }
-  fclose (entree);
+  fclose (file_in);
   printf ("%d individus\n", nind);
 
  /* lecture de la structure et des génotypes des famille pour repérage des familles de type sib_tdt */
@@ -260,35 +265,35 @@ int main ()
   } /*2 famille par famille*/
  } /*1 marqueur par marqueur*/
  
- /* écriture du fichier de sortie*/
+ /* écriture du fichier de file_out*/
  
  printf ("pour %d familles :%d groupes de 1 cas et 3 pseudo-controles ont été créés pour %d covariable(s) et %d marqueurs\n",tdt,trio,cov,nbm); 
  printf ("dont %d famille multiplex et %d cas indépendants\n", multi,trio-nmulti); 
  printf ("%d fratrie(s) avec au moins un parent manquant et un enfant sain (%d individus): les controles sont les enfants sains \n",sib_tdt,nreal); 
  printf ("NB: %d famille(s) incomplète(s) (pas d'enfant atteint ou un parent non génotypé sans enfant sain)ignorée(s) \n",incomp); 
- printf ("Donner le nom du fichier de sortie: \n");
+ printf ("Donner le nom du fichier de file_out: \n");
  scanf ("%80s", ficrec);
- sortie = fopen (ficrec, "w");
+ file_out = fopen (ficrec, "w");
 
  for (i=0; i<trio*4; i=i+1)
  {
    for (j=0; j<(6+cov); j=j+1)
- fprintf (sortie, "%d\t", pseudo[i][j]);
+ fprintf (file_out, "%d\t", pseudo[i][j]);
    for (j=6+cov; j<(6+cov+nbm*2); j=j+2)
- fprintf (sortie, "%d\t", pseudo[i][j]);
-   fprintf (sortie,"\n");
+ fprintf (file_out, "%d\t", pseudo[i][j]);
+   fprintf (file_out,"\n");
  }
 
  for (i=0; i<nreal; i=i+1)
  {
    for (j=0; j<(6+cov); j=j+1)
- fprintf (sortie, "%d\t", real[i][j]);
+ fprintf (file_out, "%d\t", real[i][j]);
    for (j=6+cov; j<(6+cov+nbm*2); j=j+2)
- fprintf (sortie, "%d\t", real[i][j]);
-   fprintf (sortie,"\n");
+ fprintf (file_out, "%d\t", real[i][j]);
+   fprintf (file_out,"\n");
  }
 
- fclose (sortie);
+ fclose (file_out);
 
  printf ("Les variables reportées dans %s sont, dans l'ordre:\n",ficrec);
  printf (" famille,individu, pere, mere, sexe, affected status, covariable x %d, génotype au marqueur x %d\n",cov,nbm);
