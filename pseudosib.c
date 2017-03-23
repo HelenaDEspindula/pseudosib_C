@@ -1,8 +1,11 @@
                              /* PSEUDO-SIBLINGS CREATION PROGRAM */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "library.h"
 # define NIND 1500  /* nombre max d'individus*/
 # define NBM 100  /* nombre max de marqueurs*/
-# include <stdio.h>
  
 int main ()
 {
@@ -19,14 +22,8 @@ int main ()
   char ficrec[81]; // name of the output file
   FILE * file_in, * file_out;
 
-/*titre*/
-  printf ("Caractéristiques du fichier de données à respecter pour la création de pseudogermains (pour chromosome X, utiliser un autre programme):\n");
-  printf (" -> les colonnes doivent être séparées par des espaces ou des tabulations\n");
-  printf (" -> les individus (au maximum 1500) doivent être classés par famille\n");
-  printf (" -> les premières colonnes doivent correspondre à: family_id, id, father_id, mother_id, sex, affected status, covariables (maximum 10), marqueurs (allèle1 allèle2)\n");
-  printf (" -> les id ne doivent pas comporter de caractères alphanumériques(0 si manquant)\n");
-  printf (" -> sex et affected status doivent être codés 1 ou 2 (0 si manquant)\n");
-  printf (" -> les allèles (au maximum 100 marqueurs) doivent être recodés 1 ou 2 (0 si manquant, les males sont codés comme des homozygotes)\n");
+  header();
+
 
 /*lecture du fichier de données et des paramètres de base*/
   printf ("\n Give the name of the file to be analyzed: \n");

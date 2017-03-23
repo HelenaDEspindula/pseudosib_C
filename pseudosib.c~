@@ -1,8 +1,11 @@
                              /* PSEUDO-SIBLINGS CREATION PROGRAM */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "library.h"
 # define NIND 1500  /* nombre max d'individus*/
 # define NBM 100  /* nombre max de marqueurs*/
-# include <stdio.h>
  
 int main ()
 {

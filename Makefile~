@@ -3,7 +3,7 @@
 CFLAGS = -Wall -g
 LDFLAGS = -lm
 
-objs = pseudosib.o
+objs = library.o pseudosib.o
 
 # Regra default
 
@@ -11,13 +11,14 @@ all: pseudosib $(objs)
 
 # Regras de ligação
 
-pseudosib: pseudosib.c
-	gcc pseudosib.c -o pseudosib $(CFLAGS) $(LDFLAGS)
+pseudosib: pseudosib.c library.h
+	gcc pseudosib.c library.h -o pseudosib $(CFLAGS) $(LDFLAGS)
 
 # Regras de compilação
 
-pseudosib.o: pseudosib.c
+pseudosib.o: pseudosib.c library.h
 	gcc -c pseudosib.c $(CFLAGS)
 
-
+library.o: library.c library.h
+	gcc -c library.c $(CFLAGS)
 
