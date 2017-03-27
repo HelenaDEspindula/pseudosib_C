@@ -14,18 +14,18 @@ int main ()
 	int real [NIND][2*NBM+6+10];
 	int type [NIND];
 	int i=0,j,k,h,l,m, n, trio, geno_pere,geno_mere,geno_aff,geno_sain,sex_aff, sib_tdt=0,tdt=0; 
-	int nind=0;
-	int nbm=0; // number of marquers
+	int nind=0; // real number of individuals
+	int nbm=0; // real number of markers
 	int incomp=0, fam=0, multi, aff, sain, nreal, nmulti;
-	int cov; // number of covariates
+	int cov; // real number of covariates
 	char ficgeno[81]; // name of the input file
 	char ficrec[81]; // name of the output file
-	FILE * file_in, * file_out;
+	FILE * file_in;
+	FILE * file_out;
 
 	header();
 
-
-/*lecture du fichier de données et des paramètres de base*/
+/* -- Parameters imput -- */
 	printf ("\n Give the name of the file to be analyzed: \n");
 	scanf ("%80s", ficgeno);
 
@@ -34,6 +34,7 @@ int main ()
 
 	printf ("Give the number of covariates (maximum %d)\n", NIND);
 	scanf ("%d", &cov);
+/* -- End of parameters imput -- */
 
 
 /* -- Dynamic allocation of matrix "geno" -- */
@@ -53,25 +54,34 @@ int main ()
 /* -- End of dynamic allocation -- */
 
 
-
-	file_in = fopen (ficgeno, "r");
-	i = 0;
-
-	while (1)
-	{ 
+/* -- File reading -- */
+	file_in = fopen (ficgeno, "r"); // Open imput file
+	printf("Arquivo aberto\n");
+	i=0;
+	fscanf (file_in, "%d", &geno[i][0]); 
+	while (feof (file_in) == 0)
+	{	
+		for (j=1; j<(2*nbm + 6 + cov); j++) 
+		{
+			fscanf (file_in, "%d", &geno[i][j]);
+		}
+		i++;
 		fscanf (file_in, "%d", &geno[i][0]); 
-		if (feof (file_in)) break;
-		for (j=1; j<(2*nbm + 6 + cov); j=j+1) fscanf (file_in, "%d", &geno[i][j]);
-		i=i+1;
-		nind=i;
 	}
-
+	nind=i;
 	fclose (file_in);
-	printf ("%d individus\n", nind);
+	printf ("%d individuals\n", nind);
+/* -- End of file reading -- */
+
+
+
+
+ 
 
  /* lecture de la structure et des génotypes des famille pour repérage des familles de type sib_tdt */
-
-	for (i=0; i<nind; i=i+1) if (geno [i][0]!=fam)
+	for (i=0; i<nind; i=i+1)
+	//{
+	if (geno [i][0]!=fam)
 	{ /*1*/
 		fam=geno[i][0];
 	
@@ -378,12 +388,17 @@ int main ()
 		fprintf (file_out,"\n");
 	}
 
- fclose (file_out);
+	fclose (file_out);
 
- printf ("Les variables reportées dans %s sont, dans l'ordre:\n",ficrec);
- printf (" famille,individu, pere, mere, sexe, affected status, covariable x %d, génotype au marqueur x %d\n",cov,nbm);
- printf ("attention : en cas d'erreur mendélienne, les génotypes sont codés 0 pour tout le cluster");
+	printf ("Les variables reportées dans %s sont, dans l'ordre:\n",ficrec);
+	printf (" famille,individu, pere, mere, sexe, affected status, covariable x %d, génotype au marqueur x %d\n",cov,nbm);
+	printf ("attention : en cas d'erreur mendélienne, les génotypes sont codés 0 pour tout le cluster\n");
+*/
+	return (0);
 
- return (0);
+
+ 
+	return(0);
 }
+
 
