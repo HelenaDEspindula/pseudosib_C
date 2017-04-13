@@ -1,66 +1,123 @@
-Help ou cabeçalho
+
 // Obs minhas
+Help ou cabeçalho
 Linha de comando ou interface?
 Ver número do individuo com maior id
 Ordenar familias
+Separar trios com mais de 1 filho afetado?
 // fim das minhas obs
 
 
-Em cada familia:
-Verifica se os individuos não são zerados em todos os marcadores
+// -- Arquivo de entrada - Matrix de x linhas (individuos) e as seguintes y colunas (caracteristicas) separadas por 1 espaço:
+Familia: Código numérico, único para cada família;
+ID_individuo: Código numérico, único para cada indivíduo;
+ID_Pai: Código numérico, correspondente ao ID_individuo do pai;
+ID_Mae: Código numérico, correspondente ao ID_individuo do mãe;
+Sexo: Código numérico, incando se é masculino (1) ou feminino (valor 2);
+Status: Código numérico, indicando situaçao do individuo, se está afetado (2) ou saudável (1);
+Outras_Covariaveis: Código numérico de um único digito, não é utilizado pelo programa;
+Genotipos: Lista de números aos pares e separados por espaço, variando entre 0 (não genotipado), 1 (A), 2 (C), 3(G) e 4 (T). 
+           Exemplo, 0 0 1 1 1 2 indica 3 genótipos, sendo o primeiro desconhecido, o segundo homozigoto AA, e o terceiro heterozigoto AC
 
-Se não existir um filho afetado - descarta a familia
-
-Se tem um filho afetado && 2 pais genotipados -> faz pseudo sib normal
-
-Se tem um filho afetado && 1 pai genotipado && 1 irmão saudavel -> faz pseudo sib com irmão
-
-Se tem um filho afetado && não tem genotipo dos pais ou irmãos - descarta familia
+Exemplo:
+Familia	ID_individuo	ID_Pai	ID_Mae	Sexo	Status	Outras_Covariaveis	Genotipos(varias colunas cada uma com um marcador)
+1			1					0			0			1		1 			...						1 2	2 2	1 3							
+1			2					0			0			2		1			...						1 2	1 2	3 3
+1			3					1			2			1		2			...						2 2	2 2	1 3
 
 
+// -- Arquivo de saida - Matrix de x linhas (individuos) e as seguintes y colunas (caracteristicas) separadas por 1 espaço
+Familia: Código numérico, único para cada família;
+ID_individuo: Código numérico, único para cada indivíduo;
+ID_Pai: Código 0;
+ID_Mae: Código 0;
+Sexo: Código numérico, incando se é masculino (1) ou feminino (valor 2);
+Status: Código numérico, indicando situaçao do individuo, se está afetado (1) ou saudável (0);
+Outras_Covariaveis: Código numérico de um único digito, não é utilizado pelo programa
+Genotipos: Lista de números aos pares e separados por espaço, variando entre -1 (desconhecido), 1 (....), 2 (homozigoto mais frequente), 3(heterozigoto) e 4 (homozigoto menos frequente). 
+           Exemplo, -1 2 3 indica 3 genótipos, sendo o primeiro desconhecido, o segundo homozigoto (por exemplo:AA), e o terceiro heterozigoto (por exemplo:AC)
+
+Exemplo:
+Familia	ID_individuo	ID_Pai	ID_Mae	Sexo	Status	Outras_Covariaveis	Genotipos(varias colunas cada uma com um marcador)
+1			3					0			0			1		2 			...						2	4	2							
+1			4					0			0			1		1			...						3	3	3
+1			5					0			0			1		1			...						3	3	-1
+1			6					0			0			1		1			...						4	2	-1
+
+
+
+// -- Programa --//
+Em cada familia aplicar as seguintes considerações:
+
+Verifica se os individuos não são zerados em todos os marcadores 
+
+
+Se não existir um filho afetado genotipado- descarta a familia
+Se não existir pelo menos um pai genotipado descarta a família  - descarta familia
+Se existir filho afetado, um pai genotipado e nenhum irmao saudável - descarta familia
+
+Se tem um filho afetado e genotipado && 2 pais genotipados -> faz pseudo sib normal (com 2 pais)
+Se tem um filho afetado e genotipado && 1 pai genotipado && pelo menos um irmão saudavel genotipado -> faz pseudo sib com irmão
+
+
+// Obs: Se tem mais de um filho afetado e genotipado && 2 pais genotipados - interpreta como duas familias diferetes com os mesmos pais
+
+// Talvez tenha que re-codificar os genotipos ou algo assim para facilitar o resto do processo
 
 De marcador em marcador
-Familia por familia
+	Familia por familia
+		// -- pseudo sib normal -- //
+		Se familia é pseudo_sib_normal
+			//criar lista de possiveis genotipos para a saida do programa
+			Criar 4 linhas, aplicando as regras a seguir:
+				1a coluna: Familia - atribuir código da Familia
+				2a coluna: ID_individuo - atribuir 
+				    ID_individuo do filho afetado na primeira linha
+				    ID_individuo novos (unicos) para as 3 linhas subsequentes
+				3a coluna: ID_Pai: atribui 0
+				4a coluna: ID_Mãe: atribui 0
+				5a coluna: Sexo - atribuir o Sexo do filho afetado
+				6a coluna: Status - atribuir: 
+				    Status do filho affetado (valor 1) na primeira linha
+				    Valor 0, indicando que são todos saudáveis
+				7a coluna: Outras_Covariaveis - atribuir Outras_Covariaveis do filho afetado
+				//covariaveis podem conter mais de uma coluna, portanto a coluna Genotipos deverá ser deslocada à direita, deixando de ser a 6a coluna
+	
+				8a coluna: Genotipos: Caso:
+					pai ou mãe ou filho afetado mas sem genotipo: 	Genotipos - atribuir valor 1
+					pais heterozigotos: 							Genotipos - atribuir:
+																		valor equivalente ao genotipo do filho afetado na primeira linha (Ex: genotipo 1 2, heterozigoto=3)
+																		valor equivalente ao genotipos correspondentes aos demais possiveis por mendel para as 3 linhas subsequentes 
+																			(Ex:AT (heterozigoto = 3),AT(heterozigoto = 3),TT(homozigoto menos frequente = 4) quando afetado igual a AA (homozigoto mais frequente = 2))
+					só 1 pai heterozigoto (ex: AA e Aa):	Genotipos - atribuir:
+																		valor equivalente ao genotipos do filho afetado na primeira linha
+																		valor equivalente ao genotipos com 50% de chance na segunda linha
+																		valor -1 para a 3a e 4a linhas (outros dois irmaos)
+					Se pais homozigotos:							Genotipos - atribuir valor 1 para as quatro linhas
+		// -- fim do pseudo sib normal -- //
 
-// pseudo sib normal
-
-Começa matriz do pseudo sib normal
-	Usa 4 linhas
-		1a coluna numero da familia
-		2a coluna
-			ID do filho afetado na primeira linha
-			Novos ID (num_afetados -1) *3 +linha nas demais
-		Variavel sexo = a do filho afetado
-		Variavel status 
-			1a linha affetado (=1)
-			2-4a saudavel (=0)
-	Se o pai ou mãe ou filho afetado sem genotipo - coloca 1 no genotipo
-
-Se pais heterozigotos
-	Filho afetado + os demais genotipos possiveis por mendel (AA,Aa,Aa, aa)
-
-Se só 1 pai heterozigoto (ex: AA e Aa)
-	Filho afetado + 1 irmão com o outro genotipo com 50% de chance + 2 irmãos = -1 (ex: AA, Aa, -1, -1)
-
-Se pais homozigotos
-	4 filhos = 1
-
-// pseudo sib com irmão
-
-Copia familia e ID para nova matriz, 0 para pai e mãe
-	Se era afetado (=2) passa a ser =1
-	Se era saudavel (=1) passa a ser = 0
-	Se desconhecido status = -1
-Copia as covariaveis do original
-Genotipo
-	Se 0 0 passa a ser -1
-	O resto soma os alelos do marcador e coloca a soma
-
-Imprime / gera arquivo saida
+		// -- pseudo sib com irmão -- //
+		Se familia é pseudo_sib_com_irmão
+			//criar lista de possiveis genotipos para a saida do programa
+			Criar numero de linhas igual ao numero de filhos (afetado + saudaveis) na familia, aplicando as regras a seguir:
+				1a coluna: Familia - atribuir código da Familia
+				2a coluna: ID_individuo - atribuir mesma ID_individuo de cada irmão;
+				3a coluna: ID_Pai: atribui 0;
+				4a coluna: ID_Mãe: atribui 0;
+				5a coluna: Sexo - atribuir o Sexo de cada irmão;
+				6a coluna: Status - atribuir:
+					 Valor 1 se o filho era originalmente afetado (=2);
+					 Valor 0 se o filho era originalmente saudavel (=1);
+				 	 Valor -1 se Status original era desconhecido (=0);
+				7a coluna: Outras_Covariaveis - atribuir Outras_Covariaveis de cada irmão;
+				//covariaveis podem conter mais de uma coluna, portanto a coluna Genotipos deverá ser deslocada à direita, deixando de ser a 6a coluna
+	
+				8a coluna: Genotipos: atribuir:
+					Valor -1 se originalmente genotipo desconhecido (= 0 0);
+					Valor equivalente ao genotipos de cada irmão;
+		// -- fim do pseudo sib com irmão -- //
 
 
+Gera arquivo saida a partir da matriz de saída - cada coluna da matriz deve ser separada por um espaço no arquivo.
 
-
-
-
-
+// -- Fim do programa -- //
