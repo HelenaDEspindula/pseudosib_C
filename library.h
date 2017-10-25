@@ -2,16 +2,69 @@
 #ifndef __LIBRARY__
 #define __LIBRARY__
 #include <stdio.h>
-# define NIND 1500	/* nombre max d'individus*/
-# define NBM 100	/* nombre max de marqueurs*/
+#define NAME_TAM 100
+#define VERSION 1.0
+#define NIND 2001
+#define ID_COL 1
+#define FIXED_COL 6
+#define ZERO 0
 
-/* --- Global --- */
+/* -- Global variables -- */
+
+int ** input_matrix; // input matrix
+int ** intermediary_matrix; // input matrix
+int ** output_matrix; // input matrix
+int covariables; // real number of covariates
+char name_file_in[NAME_TAM]; // name of the input file
+char name_file_out[NAME_TAM]; // name of the output file
+FILE * file_in;
+FILE * file_out;
+char missing;
+char separated;
+int num_col_in;
+int num_ind;
+int markers;
+
+typedef struct Markers_t
+{
+  char marker_name [NAME_TAM] ;
+  int minor_allele;
+  int major_allele;
+} Markers_t;
+
+Markers_t *markers_list;
+
+/* -- End of global variables -- */
 
 
 
 /* --- Functions --- */
 
+int compare ( const void *pa, const void *pb );
+
+void sort_by_column (int** matrix, int max_lin, int max_col);
+
+void input_read ();
+
+int** realloc_matrix_int (int** matrix, int lin , int col, int old_last_lin);
+
+int** malloc_matrix_int (int** input_matrix, int num_ind, int num_col_in);
+
+Markers_t * malloc_vector_mark (Markers_t * vector, int col);
+
+int* malloc_vector_int (int* vector, int col);
+
+void initialization (int argc, char **argv);
+
+int comand_line (int argc, char **argv);
+
+void error_screen (int error);
+
 void header();
+
+void free_matrix(int ** matrix, int lin_ini, int lin_fin);
+
+void print_matrix (int ** matrix, int max_lin, int max_col);
 
 
 #endif

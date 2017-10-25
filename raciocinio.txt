@@ -1,9 +1,20 @@
 
+// Obs minhas
+Help ou cabeçalho
+Linha de comando
+Leitura do arquivo -> matriz
+(com erros de leitura)
+Ver número do individuo com maior id
+Ordenar familias
+Separar trios com mais de 1 filho afetado?
+// fim das minhas obs
+
+
 // -- Arquivo de entrada - Matrix de x linhas (individuos) e as seguintes y colunas (caracteristicas) separadas por 1 espaço:
 Familia: Código numérico, único para cada família;
 ID_individuo: Código numérico, único para cada indivíduo;
-ID_Pai: Código numérico, correspondente ao ID_individuo do pai, caso não haja pai esse será numerado com 0 ou 9999;
-ID_Mae: Código numérico, correspondente ao ID_individuo do mãe, caso não haja mãe esse será numerado com 0 ou 9998;
+ID_Pai: Código numérico, correspondente ao ID_individuo do pai;
+ID_Mae: Código numérico, correspondente ao ID_individuo do mãe;
 Sexo: Código numérico, incando se é masculino (1) ou feminino (valor 2);
 Status: Código numérico, indicando situaçao do individuo, se está afetado (2) ou saudável (1);
 Outras_Covariaveis: Código numérico de um único digito, não é utilizado pelo programa;
@@ -11,10 +22,10 @@ Genotipos: Lista de números aos pares e separados por espaço, variando entre 0
            Exemplo, 0 0 1 1 1 2 indica 3 genótipos, sendo o primeiro desconhecido, o segundo homozigoto AA, e o terceiro heterozigoto AC
 
 Exemplo:
-Familia	    ID_individuo	ID_Pai	ID_Mae	Sexo	Status	Outras_Covariaveis	Genotipos(varias colunas cada uma com um marcador)
-1			1				0		0		1		1 		...					1 2	2 2	1 3							
-1			2				0		0		2		1		...					1 2	1 2	3 3
-1			3				1		2		1		2		...					2 2	2 2	1 3
+Familia	ID_individuo	ID_Pai	ID_Mae	Sexo	Status	Outras_Covariaveis	Genotipos(varias colunas cada uma com um marcador)
+1			1					0			0			1		1 			...						1 2	2 2	1 3							
+1			2					0			0			2		1			...						1 2	1 2	3 3
+1			3					1			2			1		2			...						2 2	2 2	1 3
 
 
 // -- Arquivo de saida - Matrix de x linhas (individuos) e as seguintes y colunas (caracteristicas) separadas por 1 espaço
@@ -25,24 +36,16 @@ ID_Mae: Código 0;
 Sexo: Código numérico, incando se é masculino (1) ou feminino (valor 2);
 Status: Código numérico, indicando situaçao do individuo, se está afetado (1) ou saudável (0);
 Outras_Covariaveis: Código numérico de um único digito, não é utilizado pelo programa
-Genotipos: Lista de números aos pares e separados por espaço, variando entre -1 (desconhecido), 1 (outros), 2 (homozigoto mais frequente), 3(heterozigoto) e 4 (homozigoto menos frequente). 
+Genotipos: Lista de números aos pares e separados por espaço, variando entre -1 (desconhecido), 1 (....), 2 (homozigoto mais frequente), 3(heterozigoto) e 4 (homozigoto menos frequente). 
            Exemplo, -1 2 3 indica 3 genótipos, sendo o primeiro desconhecido, o segundo homozigoto (por exemplo:AA), e o terceiro heterozigoto (por exemplo:AC)
 
 Exemplo:
-Familia	    ID_individuo	ID_Pai	    ID_Mae	    Sexo	Status	    Outras_Covariaveis	    Genotipos(varias colunas cada uma com um marcador)
-1			3				0			0			1		2 			...						2	4	2							
-1			4				0			0			1		1			...						3	3	3
-1			5				0			0			1		1			...						3	3	-1
-1			6				0			0			1		1			...						4	2	-1
+Familia	ID_individuo	ID_Pai	ID_Mae	Sexo	Status	Outras_Covariaveis	Genotipos(varias colunas cada uma com um marcador)
+1			3					0			0			1		2 			...						2	4	2							
+1			4					0			0			1		1			...						3	3	3
+1			5					0			0			1		1			...						3	3	-1
+1			6					0			0			1		1			...						4	2	-1
 
-
-
-// Obs minhas
-Antes de gerar novas ID checar qual o individuo com a maior ID_individuo no imput (x) e começar nova numeração em (x+1);
-(?) Possivelmente implementar um "ordenar familias" do imput antes de trabalhar os dados -> ordem crescente de familia e dentro de cada familia ordem crescente de ID_individuo;
-(?) Possivelmente determinar qual o genotipo homozigoto mais frequente, heterozigoto e homozigoto menos frequente de cada marcador dos Genotipos
-Definição de filho: individuo cujo ID_Pai e/ou ID_Mae não são desconhecidos (representados por 0 ou 9999 ou 9998)
-// fim das minhas obs
 
 
 // -- Programa --//
@@ -88,7 +91,7 @@ De marcador em marcador
 																		valor equivalente ao genotipo do filho afetado na primeira linha (Ex: genotipo 1 2, heterozigoto=3)
 																		valor equivalente ao genotipos correspondentes aos demais possiveis por mendel para as 3 linhas subsequentes 
 																			(Ex:AT (heterozigoto = 3),AT(heterozigoto = 3),TT(homozigoto menos frequente = 4) quando afetado igual a AA (homozigoto mais frequente = 2))
-					só 1 pai heterozigoto (ex: AA e Aa):        	Genotipos - atribuir:
+					só 1 pai heterozigoto (ex: AA e Aa):	Genotipos - atribuir:
 																		valor equivalente ao genotipos do filho afetado na primeira linha
 																		valor equivalente ao genotipos com 50% de chance na segunda linha
 																		valor -1 para a 3a e 4a linhas (outros dois irmaos)
@@ -110,9 +113,10 @@ De marcador em marcador
 				 	 Valor -1 se Status original era desconhecido (=0);
 				7a coluna: Outras_Covariaveis - atribuir Outras_Covariaveis de cada irmão;
 				//covariaveis podem conter mais de uma coluna, portanto a coluna Genotipos deverá ser deslocada à direita, deixando de ser a 6a coluna
+	
 				8a coluna: Genotipos: atribuir:
 					Valor -1 se originalmente genotipo desconhecido (= 0 0);
-					Valor equivalente ao genotipos de cada irmão ( 2(homozigoto mais frequente), 3(heterozigoto) e 4 (homozigoto menos frequente) );
+					Valor equivalente ao genotipos de cada irmão;
 		// -- fim do pseudo sib com irmão -- //
 
 
