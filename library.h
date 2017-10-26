@@ -6,14 +6,18 @@
 #define VERSION 1.0
 #define NIND 2001
 #define ID_COL 1
+#define SX_COL 4
+#define FT_COL 2
+#define MT_COL 3
 #define FIXED_COL 6
 #define ZERO 0
+#define TRIO_RATE 1.25
+
 
 /* -- Global variables -- */
 
 int ** input_matrix; // input matrix
-int ** intermediary_matrix; // input matrix
-int ** output_matrix; // input matrix
+int ** output_matrix; // output matrix
 int covariables; // real number of covariates
 char name_file_in[NAME_TAM]; // name of the input file
 char name_file_out[NAME_TAM]; // name of the output file
@@ -23,6 +27,7 @@ char missing;
 char separated;
 int num_col_in;
 int num_ind;
+int num_trios;
 int markers;
 
 typedef struct Markers_t
@@ -34,6 +39,15 @@ typedef struct Markers_t
 
 Markers_t *markers_list;
 
+typedef struct Trio_t
+{
+  int *child; // pointer to child line
+  int *father; // poiter to father line
+  int *mather; // poiter to mather line
+} Trio_t;
+
+Trio_t *trio_list;
+
 /* -- End of global variables -- */
 
 
@@ -44,6 +58,12 @@ int compare ( const void *pa, const void *pb );
 
 void sort_by_column (int** matrix, int max_lin, int max_col);
 
+void allels_def (int** matrix, int max_lin, int max_col, int last_col);
+
+void find_trios (int** matrix, int max_lin, int max_col);
+
+int * search_id (int** matrix, int max_lin, int query_id);
+
 void input_read ();
 
 int** realloc_matrix_int (int** matrix, int lin , int col, int old_last_lin);
@@ -51,6 +71,8 @@ int** realloc_matrix_int (int** matrix, int lin , int col, int old_last_lin);
 int** malloc_matrix_int (int** input_matrix, int num_ind, int num_col_in);
 
 Markers_t * malloc_vector_mark (Markers_t * vector, int col);
+
+Trio_t * malloc_vector_trio (Trio_t * vector, int col);
 
 int* malloc_vector_int (int* vector, int col);
 
