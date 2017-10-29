@@ -145,7 +145,7 @@ void allels_def (int** matrix, int max_lin, int max_col, int last_col)
 }
 
 
-void find_trios (int** matrix, int max_lin, int max_col)
+int find_trios (int** matrix, int max_lin, int max_col)
 {
 	int i, t;
 	t = 0;
@@ -157,7 +157,7 @@ void find_trios (int** matrix, int max_lin, int max_col)
 	for(i=0; i < max_lin; i++)
 	{
 		printf("Linha %d: ID = %d, FT = %d, MT = %d \n", i, matrix[i][ID_COL], matrix[i][FT_COL], matrix[i][MT_COL]);
-		if ( (matrix[i][FT_COL] != 0) && (matrix[i][MT_COL] != 0) ) // Se nenhum dos pais é zero
+		if ( (matrix[i][ST_COL] == 2) && (matrix[i][FT_COL] != 0) && (matrix[i][MT_COL] != 0) ) // Se nenhum dos pais é zero
 		{
 
 			(trio_list[t]).child = matrix[i];
@@ -196,6 +196,8 @@ void find_trios (int** matrix, int max_lin, int max_col)
 		}
 	}
 	num_trios = t-1;
+
+	return(num_trios*4);
 }
 
 
@@ -223,12 +225,6 @@ int * search_id (int** matrix, int max_lin, int query_id)
 	}
 
 }
-
-
-
-
-
-
 
 
 /* -- Input reading -- */
@@ -402,25 +398,9 @@ Markers_t * malloc_vector_mark (Markers_t * vector, int col)
 		error_screen(10);
 	}
 
-	printf("Malloc matriz markers Ok.\n");
+	printf("Malloc estruct list markers Ok.\n");
 	return(vector);
 }
-
-/* -- Malloc Vector (Trio_t) -- */
-
-Trio_t * malloc_vector_trio (Trio_t * vector, int col)
-{
-	vector = (Trio_t *) malloc ( col * sizeof (Trio_t)) ;
-	if ( vector == NULL )
-	{
-		error_screen(10);
-	}
-
-	printf("Malloc matriz trio Ok.\n");
-	return(vector);
-}
-
-
 
 /* -- Malloc Vector (int) -- */
 
@@ -434,6 +414,22 @@ int* malloc_vector_int (int* vector, int col)
 
 	return(vector);
 }
+
+/* -- Malloc Vector (Trio_t) -- */
+
+Trio_t * malloc_vector_trio (Trio_t * vector, int col)
+{
+	vector = (Trio_t *) malloc ( col * sizeof (Trio_t)) ;
+	if ( vector == NULL )
+	{
+		error_screen(10);
+	}
+
+	printf("Malloc estruct list trio Ok.\n");
+	return(vector);
+}
+
+
 
 /* -- Initialization -- */
 
@@ -468,6 +464,7 @@ int comand_line (int argc, char **argv)
 	// Default vallues:
 	missing = '.';
 	separated = ' ';
+	mark_col = ONE_COL;
 	
 	int i = 1;
 	while (i<argc)
@@ -567,6 +564,26 @@ int comand_line (int argc, char **argv)
 				return(2); // Unknown option vallue
 			}
 		}
+		else if ( (strcmp ("-g", argv[i]) == 0) || (strcmp ("--genotypes", argv[i]) == 0) )
+		{
+			i++;
+			if (argc<=i)
+			{
+				return(4);
+			}
+			if (strcmp ("1", argv[i]) == 0)
+			{
+				mark_col = 1;
+			}
+			else if (strcmp ("2", argv[i]) == 0)
+			{
+				mark_col = 2;
+			}
+			else
+			{
+				return(2);
+			}
+		}
 		else
 		{
 			return(4); // Unknown option
@@ -587,6 +604,7 @@ int comand_line (int argc, char **argv)
 		printf ("Markers: %d;\n", markers);
 		printf ("Not Available: [%c];\n", missing);
 		printf ("Separated: [%c].\n", separated);
+		printf ("Genotypes in [%d] columns.\n", mark_col);
 
 		return(0); // Initialization ok
 	}
@@ -625,7 +643,7 @@ void error_screen (int error)
 		printf("PseudoSib v %f \n", VERSION);
 		printf("\n");
 		printf("Usage:\n");
-		printf("$ ./pseudosib -i <input.ped> -o <output.txt> -c <int> -m <int> [-h] [-n <string>] [-s <string>] \n");
+		printf("$ ./pseudosib -i <input.ped> -o <output.txt> -c <int> -m <int> [-h] [-n <string>] [-s <string>] [-g <int>]\n");
 		printf("\n");
 		printf("\n");
 		printf("Options:\n");
@@ -634,6 +652,7 @@ void error_screen (int error)
 		printf("-m, --markers <int> \t \t Number of markers \n");
 		printf("-n, --notavailable <string> \t 'point' (default) or 'na' \n");
 		printf("-s, --separated <string> \t 'space' (default) or 'tab' \n");
+		printf("-g, --genotypes <int> \t '1' (default) or '2', number of columns used for genotypes in output.\n");
 		printf("\n");
 	}
 
@@ -670,6 +689,8 @@ void error_screen (int error)
 
 	printf("\n");
 
+	free_all();
+
 	exit(error);
 }
 
@@ -690,6 +711,29 @@ void print_matrix (int ** matrix, int max_lin, int max_col)
 
 }
 
+void free_all()
+{
+	if (input_matrix != NULL)
+	{
+		free_matrix(input_matrix, ZERO, num_ind);
+	}
+	if (markers_list != NULL)
+	{
+		free(markers_list);
+		markers_list = NULL;
+	}
+	if (trio_list != NULL)
+	{
+		free(trio_list);
+		trio_list = NULL;
+	}
+	if (output_matrix != NULL)
+	{
+		free_matrix(output_matrix, ZERO, num_output);
+	}
+	printf("Fiz free de tudo.\n");
+}
+
 /* -- Free Matrix -- */
 
 void free_matrix(int ** matrix, int lin_ini, int lin_fin)
@@ -704,8 +748,144 @@ void free_matrix(int ** matrix, int lin_ini, int lin_fin)
 	free( matrix );
 	matrix = NULL;
 
-	printf("Fiz free\n");
+	printf("Fiz free matriz\n");
 }
+
+
+void output_make()
+{
+	int i, j, t, k;
+	//int fa1, fa2, ma1, ma2, ca1, ca2;
+	//int s1a1, s1a2, s2a1, s2a2, s3a1, s3a2, s4a1, s4a2;
+
+	printf("Entrei em output_make.\n");
+
+	i = 0;
+	t = -1;
+	k = input_matrix[num_ind][ID_COL] +1; // Numeração IDs irmãos
+
+	if (mark_col == ONE_COL)
+	{
+		num_col_out = FIXED_COL + covariables + markers;
+	}
+	else if (mark_col == TWO_COL)
+	{
+		num_col_out = num_col_in;
+	}
+
+	output_matrix = malloc_matrix_int (output_matrix, num_output, num_col_out);
+
+	while( (i<num_output) && (t<num_trios) )
+	{
+		//printf("i = %d, iresto4 = %d.\n", i, (i%4));
+
+		if (i%4 == 0)
+		{
+			t++;
+			printf("Linha %d = Filho real do trio %d\n", i, t );
+			for(j=0; j<covariables; j++)
+			{
+				output_matrix[i][j] = ((trio_list[t]).child)[j];
+			}
+			if (mark_col == ONE_COL)
+			{
+				for(j=covariables; j<num_col_out; j++) // Só para testar
+				{
+					output_matrix[i][j] = 0; // A fazer
+				}
+			}
+			else if (mark_col == TWO_COL)
+			{
+				for(j=covariables; j<num_col_out; j++)
+				{
+					output_matrix[i][j] = ((trio_list[t]).child)[j];
+				}
+			}
+
+			i++;
+		}
+		else
+		{
+			printf("Linha %d = Filho virtual do trio %d\n", i, t );
+			output_matrix[i][FM_COL] = ((trio_list[t]).child)[FM_COL];
+			output_matrix[i][ID_COL] = k;
+			k++;
+			output_matrix[i][FT_COL] = ((trio_list[t]).child)[FT_COL];
+			output_matrix[i][MT_COL] = ((trio_list[t]).child)[MT_COL];
+			output_matrix[i][SX_COL] = ((trio_list[t]).child)[SX_COL];
+			output_matrix[i][ST_COL] = NOT_AFT;
+			
+			for(j=FIXED_COL; j<covariables; j++)
+			{
+				output_matrix[i][j] = ((trio_list[t]).child)[j];
+			}
+			
+			if (mark_col == ONE_COL) // Só para testar
+			{
+				for(j=covariables; j<num_col_out; j++) // Só para testar
+				{
+					output_matrix[i][j] = 0; // A fazer
+				}
+			}
+			else if (mark_col == TWO_COL)
+			{
+				for(j=covariables; j<num_col_out; j++) // Só para testar
+				{
+					output_matrix[i][j] = 1; // A fazer
+				}
+			}
+
+/*
+			if (i%3 == 0)
+			{
+				for(j=covariables; j<num_col_in; j+2) // por coluna
+				{
+					fa1 = ((trio_list[t]).father)[j];
+					fa2 = ((trio_list[t]).father)[j+1];
+					ma1 = ((trio_list[t]).mather)[j];
+					ma2 = ((trio_list[t]).mather)[j+1];
+					ca1 = ((trio_list[t]).child)[j];
+					ca2 = ((trio_list[t]).child)[j+1];
+					
+					if ( (fa1 != fa2) && (ma1 != ma2))
+					{
+						
+
+					}
+					else if ( (fa1 == fa2) && (ma1 == ma2) ) && (fa1 == ma1) )
+					{
+						//homo 
+						if (fa1 == ma1)
+						{
+							// identicos
+						}
+						else
+						{
+							// não identicos
+						}
+						
+					}
+					else if 
+					{
+						// heteroz
+					}
+
+
+
+				}
+			
+			}
+*/
+
+			i++;
+		}
+	}
+
+	printf("Imprimindo matriz output.\n");
+
+	print_matrix (output_matrix, num_output, num_col_out);
+}
+
 
 /* -- Header -- */
 

@@ -14,14 +14,11 @@ int main (int argc, char **argv, char **envp)
 
 	input_read (); // Leitura
 
+	allels_def(input_matrix, num_ind, num_col_in, markers);	// Alelos Mais e Menos frequentes &
+
 	sort_by_column (input_matrix, num_ind, num_col_in);	// Ordenação input_matrix
 
-	// Alelos Mais e Menos frequentes &
-	// Erros na logica do input
-
-	// Malloc matrix intermediaria
-
-	// Divisão de trios (input_matrix -> intermediary_matrix)
+	find_trios (input_matrix, num_ind, num_col_in);	// Coloca os trios na estrutura
 
 	free_matrix(input_matrix, ZERO, num_ind);
 

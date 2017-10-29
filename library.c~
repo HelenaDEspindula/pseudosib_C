@@ -23,6 +23,213 @@ void sort_by_column (int** matrix, int max_lin, int max_col)
 	print_matrix (matrix, max_lin, max_col);
 }
 
+void allels_def (int** matrix, int max_lin, int max_col, int last_col)
+{
+	int i, j, k, m;
+	int freq1, freq2, freq3, freq4;
+	m = 0;
+	j = (max_col - (last_col*2));
+
+
+	while(j < max_col)
+	{
+		freq1 = 0;
+		freq2 = 0;
+		freq3 = 0;
+		freq4 = 0;
+		for(k=0; k < 2; k++)
+		{
+			for(i=0; i < max_lin; i++)
+			{
+			//printf ("matriz[%d][%d] = rs_markers[%d] = %d\n", i, j, m, matrix[i][j]);	
+				if(matrix[i][j] == 1)
+				{
+					freq1++;
+				}
+				else if(matrix[i][j] == 2)
+				{
+					freq2++;
+				}
+				else if(matrix[i][j] == 3)
+				{
+					freq3++;
+				}
+				else if(matrix[i][j] == 4)
+				{
+					freq4++;
+				}
+				else if(matrix[i][j] != 0)
+				{
+					error_screen (6);
+				}
+			}
+			j++;
+		}
+
+
+		// ARRUMAR !!!!!!!!!!!!!!!!!!!!!!!!!!!1
+		//if ( (freq1 != 0) && (freq2 != 0) && (freq3 != 0) ) || ( (freq1 != 0) && (freq2 != 0) && (freq4 != 0) ) || ( (freq2 != 0) && (freq3 != 0) && (freq4 != 0) ) || ( (freq1 != 0) && (freq3 != 0) && (freq4 != 0) )
+		//{
+		//	error_screen (7);
+		//}
+
+		if( (freq1>=freq2) && (freq1>=freq3) && (freq1>=freq4)) // 1 is major
+		{
+			(markers_list[m]).major_allele = 1;
+			if (freq2 != 0)
+			{
+				(markers_list[m]).minor_allele = 2;
+			}
+			else if (freq3 != 0)
+			{
+				(markers_list[m]).minor_allele = 3;
+			}
+			else if (freq4 != 0)
+			{
+				(markers_list[m]).minor_allele = 4;
+			}
+		}
+		else if( (freq2>=freq1) && (freq2>=freq3) && (freq2>=freq4)) // 2 is major
+		{
+			(markers_list[m]).major_allele = 2;
+			if (freq1 != 0)
+			{
+				(markers_list[m]).minor_allele = 1;
+			}
+			else if (freq3 != 0)
+			{
+				(markers_list[m]).minor_allele = 3;
+			}
+			else if (freq4 != 0)
+			{
+				(markers_list[m]).minor_allele = 4;
+			}
+		}
+		else if( (freq3>=freq2) && (freq3>=freq1) && (freq3>=freq4)) // 3 is major
+		{
+			(markers_list[m]).major_allele = 3;
+			if (freq2 != 0)
+			{
+				(markers_list[m]).minor_allele = 2;
+			}
+			else if (freq1 != 0)
+			{
+				(markers_list[m]).minor_allele = 1;
+			}
+			else if (freq4 != 0)
+			{
+				(markers_list[m]).minor_allele = 4;
+			}
+		}
+		else if( (freq4>=freq2) && (freq4>=freq1) && (freq4>=freq3)) // 4 is major
+		{
+			(markers_list[m]).major_allele = 4;
+			if (freq2 != 0)
+			{
+				(markers_list[m]).minor_allele = 2;
+			}
+			else if (freq3 != 0)
+			{
+				(markers_list[m]).minor_allele = 3;
+			}
+			else if (freq1 != 0)
+			{
+				(markers_list[m]).minor_allele = 1;
+			}
+		}
+
+		printf ("rs_markers[ %d ]: major: %d, minor %d.\n", m, (markers_list[m]).major_allele, (markers_list[m]).minor_allele);
+		m++;
+	}
+
+}
+
+
+void find_trios (int** matrix, int max_lin, int max_col)
+{
+	int i, t;
+	t = 0;
+
+	printf("Entrei achar trios\n");
+
+	trio_list = malloc_vector_trio (trio_list, (max_lin*TRIO_RATE) );
+
+	for(i=0; i < max_lin; i++)
+	{
+		printf("Linha %d: ID = %d, FT = %d, MT = %d \n", i, matrix[i][ID_COL], matrix[i][FT_COL], matrix[i][MT_COL]);
+		if ( (matrix[i][ST_COL] == 2) && (matrix[i][FT_COL] != 0) && (matrix[i][MT_COL] != 0) ) // Se nenhum dos pais é zero
+		{
+
+			(trio_list[t]).child = matrix[i];
+			(trio_list[t]).father = search_id(matrix, max_lin, matrix[i][FT_COL]); // FAZER FUNÇÃO !!!!
+			(trio_list[t]).mather = search_id(matrix, max_lin, matrix[i][MT_COL]);
+
+			printf("Ponteiro f = %p, m = %p\n", (trio_list[t]).father, (trio_list[t]).mather);
+
+			if ( ( (trio_list[t]).father != NULL ) && ( (trio_list[t]).mather != NULL ) ) // Se os pais existem na tabela
+			{
+				if ( ( ((trio_list[t]).father)[SX_COL] != 1 ) || ( ((trio_list[t]).mather)[SX_COL] != 2 ) )
+				{
+					// ERRO DE GENERO DOS PAIS
+				}
+				else
+				{
+					printf("Achei o %d trio:\n c = %d, f = %d, m = %d \n", t, ((trio_list[t]).child)[ID_COL], ((trio_list[t]).father)[ID_COL], ((trio_list[t]).mather)[ID_COL]);
+					t++;
+				}
+			}
+			else // Se os pais não existem
+			{
+				printf("  Um ou mais pais não estão na tabela\n");
+
+				// Futuro caso dos irmãos;
+
+				(trio_list[t]).child = NULL;
+				(trio_list[t]).father = NULL;
+				(trio_list[t]).mather = NULL;	
+			}
+
+		}
+		else
+		{
+			printf("  Um ou mais pais zerados\n");
+		}
+	}
+	num_trios = t-1;
+}
+
+
+
+int * search_id (int** matrix, int max_lin, int query_id)
+{
+	// No momento busca um por um, pode ser otimizado
+
+	printf("Busca\n");
+
+	int test = 0;
+
+	while ( matrix[test][ID_COL] < query_id )
+	{
+		//printf("Procurando %d, na linha %d achei %d \n", query_id, test, matrix[test][ID_COL] );
+		test++;
+	}
+	if ( matrix[test][ID_COL] == query_id )
+	{
+		return(matrix[test]);
+	}
+	else
+	{
+		return(NULL);
+	}
+
+}
+
+
+
+
+
+
+
 
 /* -- Input reading -- */
 
@@ -31,7 +238,6 @@ void input_read ()
 	int i = 0;
 	int j = 0;
 	char ch_temp;
-	int allele1, allele2;
 
 	/* -- Assignments -- */
 
@@ -50,7 +256,7 @@ void input_read ()
 
 	/* -- Malloc rs_markers -- */
 
-	markers_list = malloc_vector_mark ( markers_list, markers); 
+	markers_list = malloc_vector_mark (markers_list, markers); 
 
 	/* -- File reading of rs_markers -- */
 
@@ -199,6 +405,22 @@ Markers_t * malloc_vector_mark (Markers_t * vector, int col)
 	printf("Malloc matriz markers Ok.\n");
 	return(vector);
 }
+
+/* -- Malloc Vector (Trio_t) -- */
+
+Trio_t * malloc_vector_trio (Trio_t * vector, int col)
+{
+	vector = (Trio_t *) malloc ( col * sizeof (Trio_t)) ;
+	if ( vector == NULL )
+	{
+		error_screen(10);
+	}
+
+	printf("Malloc estruct list trio Ok.\n");
+	return(vector);
+}
+
+
 
 /* -- Malloc Vector (int) -- */
 
@@ -418,10 +640,10 @@ void error_screen (int error)
 	switch (error)
 		{
 			case 6:
-       		printf(" ");
+       		printf("Error in the coding of allels. Only numbers 1 to 4 allowed.");
 				break;
 			case 7:
-       		printf(" ");
+       		printf("Error in the coding of allels. Only binary markers allowed.");
 				break;
 			case 8:
        		printf(" ");
@@ -474,6 +696,8 @@ void free_matrix(int ** matrix, int lin_ini, int lin_fin)
 {
 	int i;
 
+	// melhorar
+
 	for (i=lin_ini; i<lin_fin; i++)
 	{
 		free( matrix[i] );
@@ -482,7 +706,7 @@ void free_matrix(int ** matrix, int lin_ini, int lin_fin)
 	free( matrix );
 	matrix = NULL;
 
-	printf("Fiz free\n");
+	printf("Fiz free matriz\n");
 }
 
 /* -- Header -- */

@@ -5,13 +5,21 @@
 #define NAME_TAM 100
 #define VERSION 1.0
 #define NIND 2001
+#define FM_COL 0
 #define ID_COL 1
-#define SX_COL 4
 #define FT_COL 2
 #define MT_COL 3
+#define SX_COL 4
+#define ST_COL 5
 #define FIXED_COL 6
+#define NOT_AFT 1
 #define ZERO 0
 #define TRIO_RATE 1.25
+#define TWO_COL 2
+#define ONE_COL 1
+#define HOM_MAJ 2
+#define HOM_MIN 4
+#define HETOR 3
 
 
 /* -- Global variables -- */
@@ -26,9 +34,12 @@ FILE * file_out;
 char missing;
 char separated;
 int num_col_in;
+int num_col_out;
 int num_ind;
 int num_trios;
+int num_output;
 int markers;
+char mark_col;
 
 typedef struct Markers_t
 {
@@ -60,7 +71,7 @@ void sort_by_column (int** matrix, int max_lin, int max_col);
 
 void allels_def (int** matrix, int max_lin, int max_col, int last_col);
 
-void find_trios (int** matrix, int max_lin, int max_col);
+int find_trios (int** matrix, int max_lin, int max_col);
 
 int * search_id (int** matrix, int max_lin, int query_id);
 
@@ -84,9 +95,12 @@ void error_screen (int error);
 
 void header();
 
+void free_all();
+
 void free_matrix(int ** matrix, int lin_ini, int lin_fin);
 
 void print_matrix (int ** matrix, int max_lin, int max_col);
 
+void output_make();
 
 #endif

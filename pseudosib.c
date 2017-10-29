@@ -18,9 +18,11 @@ int main (int argc, char **argv, char **envp)
 
 	sort_by_column (input_matrix, num_ind, num_col_in);	// Ordenação input_matrix
 
-	find_trios (input_matrix, num_ind, num_col_in);	// Coloca os trios na estrutura
+	num_output = find_trios (input_matrix, num_ind, num_col_in);	// Coloca os trios na estrutura
 
-	free_matrix(input_matrix, ZERO, num_ind);
+	output_make();
+
+	free_all();
 
 	// Pseudo-sib (intermediary_matrix -> output_matrix)
 
