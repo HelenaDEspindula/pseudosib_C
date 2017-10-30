@@ -24,8 +24,6 @@ int main (int argc, char **argv, char **envp)
 
 	free_all();
 
-	// Pseudo-sib (intermediary_matrix -> output_matrix)
-
 	// Print output_matrix in file
 
 	return (0);

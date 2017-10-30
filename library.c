@@ -206,7 +206,7 @@ int * search_id (int** matrix, int max_lin, int query_id)
 {
 	// No momento busca um por um, pode ser otimizado
 
-	printf("Busca\n");
+	//printf("Busca\n");
 
 	int test = 0;
 
@@ -754,15 +754,14 @@ void free_matrix(int ** matrix, int lin_ini, int lin_fin)
 
 void output_make()
 {
-	int i, j, t, k;
-	//int fa1, fa2, ma1, ma2, ca1, ca2;
-	//int s1a1, s1a2, s2a1, s2a2, s3a1, s3a2, s4a1, s4a2;
+	int i, j, t, k, l, s;
+	int info;
 
 	printf("Entrei em output_make.\n");
 
 	i = 0;
 	t = -1;
-	k = input_matrix[num_ind][ID_COL] +1; // Numeração IDs irmãos
+	k = input_matrix[num_ind-1][ID_COL] +1; // Numeração IDs irmãos
 
 	if (mark_col == ONE_COL)
 	{
@@ -783,101 +782,147 @@ void output_make()
 		{
 			t++;
 			printf("Linha %d = Filho real do trio %d\n", i, t );
-			for(j=0; j<covariables; j++)
+			for(j=0; j<FIXED_COL+covariables; j++)
 			{
 				output_matrix[i][j] = ((trio_list[t]).child)[j];
 			}
+			
 			if (mark_col == ONE_COL)
 			{
-				for(j=covariables; j<num_col_out; j++) // Só para testar
+				j=FIXED_COL+covariables;
+				l=FIXED_COL+covariables;
+
+				while (j<num_col_in)
 				{
-					output_matrix[i][j] = 0; // A fazer
+
+					if ( ((trio_list[t]).child)[j] != ((trio_list[t]).child)[j + 1] )
+					{
+						output_matrix[i][l] = HETOR;
+					}
+					else if ( ((trio_list[t]).child)[j] == (markers_list[l-(FIXED_COL+covariables)]).major_allele )
+					{
+						output_matrix[i][l] = HOM_MAJ;
+					}
+					else if ( ((trio_list[t]).child)[j] == (markers_list[l-(FIXED_COL+covariables)]).minor_allele )
+					{
+						output_matrix[i][l] = HOM_MIN;
+					}
+
+					printf("J = %d, L = %d, m = %d\n",j, l, output_matrix[i][l]);
+
+					j = j + 2;
+					l++;
 				}
 			}
+				
 			else if (mark_col == TWO_COL)
 			{
-				for(j=covariables; j<num_col_out; j++)
+				for(j=FIXED_COL+covariables; j<num_col_out; j++)
 				{
 					output_matrix[i][j] = ((trio_list[t]).child)[j];
 				}
+			}		
+
+			for(j=0; j<num_col_out;j++)
+			{
+				printf("%d ", output_matrix[i][j]);
 			}
+			printf("\n");
 
 			i++;
 		}
 		else
 		{
-			printf("Linha %d = Filho virtual do trio %d\n", i, t );
-			output_matrix[i][FM_COL] = ((trio_list[t]).child)[FM_COL];
-			output_matrix[i][ID_COL] = k;
-			k++;
-			output_matrix[i][FT_COL] = ((trio_list[t]).child)[FT_COL];
-			output_matrix[i][MT_COL] = ((trio_list[t]).child)[MT_COL];
-			output_matrix[i][SX_COL] = ((trio_list[t]).child)[SX_COL];
-			output_matrix[i][ST_COL] = NOT_AFT;
-			
-			for(j=FIXED_COL; j<covariables; j++)
+			for (s=0; s<NUM_SIBS;s++)
 			{
-				output_matrix[i][j] = ((trio_list[t]).child)[j];
-			}
-			
-			if (mark_col == ONE_COL) // Só para testar
-			{
-				for(j=covariables; j<num_col_out; j++) // Só para testar
+				printf("Linha %d = Filho virtual do trio %d\n", i, t );
+				output_matrix[i+s][FM_COL] = ((trio_list[t]).child)[FM_COL];
+				output_matrix[i+s][ID_COL] = k;
+				k++;
+				output_matrix[i+s][FT_COL] = ((trio_list[t]).child)[FT_COL];
+				output_matrix[i+s][MT_COL] = ((trio_list[t]).child)[MT_COL];
+				output_matrix[i+s][SX_COL] = ((trio_list[t]).child)[SX_COL];
+				output_matrix[i+s][ST_COL] = NOT_AFT;
+				
+				for(j=FIXED_COL; j<FIXED_COL+covariables; j++)
 				{
-					output_matrix[i][j] = 0; // A fazer
+					output_matrix[i+s][j] = ((trio_list[t]).child)[j];
 				}
 			}
-			else if (mark_col == TWO_COL)
+			
+		
+			
+			j = FIXED_COL + covariables;
+			l = FIXED_COL + covariables;
+			while(j<num_col_in) // por coluna
 			{
-				for(j=covariables; j<num_col_out; j++) // Só para testar
-				{
-					output_matrix[i][j] = 1; // A fazer
-				}
-			}
+				info = make_sibs( ((trio_list[t]).father)[j], ((trio_list[t]).father)[j+1], ((trio_list[t]).mather)[j], ((trio_list[t]).mather)[j+1], ((trio_list[t]).child)[j], ((trio_list[t]).child)[j+1]);
+				
+				
+				//printf("Linha(i) = %d, Coluna(j) = %d, Info = %d \n", i, j, info );
 
-/*
-			if (i%3 == 0)
-			{
-				for(j=covariables; j<num_col_in; j+2) // por coluna
+				if (info == 1)
 				{
-					fa1 = ((trio_list[t]).father)[j];
-					fa2 = ((trio_list[t]).father)[j+1];
-					ma1 = ((trio_list[t]).mather)[j];
-					ma2 = ((trio_list[t]).mather)[j+1];
-					ca1 = ((trio_list[t]).child)[j];
-					ca2 = ((trio_list[t]).child)[j+1];
-					
-					if ( (fa1 != fa2) && (ma1 != ma2))
+					printf("Info = 1\n");
+					if (mark_col == ONE_COL) // Só para testar
 					{
-						
-
-					}
-					else if ( (fa1 == fa2) && (ma1 == ma2) ) && (fa1 == ma1) )
-					{
-						//homo 
-						if (fa1 == ma1)
+						for(s=-1; s<NUM_SIBS; s++)
 						{
-							// identicos
+							output_matrix[i+s][l] = -1;
 						}
-						else
-						{
-							// não identicos
-						}
-						
+						/*
+						output_matrix[i-1][j] = -1;
+
+						output_matrix[i][j] = -1;
+
+						output_matrix[i+1][j] = -1;
+
+						output_matrix[i+2][j] = -1;
+						*/
 					}
-					else if 
+					else if (mark_col == TWO_COL) // Só para testar
 					{
-						// heteroz
+						for(s=-1; s<NUM_SIBS; s++)
+						{
+							output_matrix[i+s][j] = -1;
+							output_matrix[i+s][j+1] = -1;
+						}
 					}
-
-
-
 				}
-			
+				else if (info == 0)
+				{
+					printf("Sibs: %d, %d, %d\n", sibs[0], sibs[1], sibs[2]);
+					if (mark_col == ONE_COL) // Só para testar
+					{
+						for (s=0; s<3; s++)
+						{
+							if ( (sibs[s] / 10) != (sibs[s] % 10) )
+							{
+								output_matrix[i+s][l] = HETOR;
+							}
+							else if ( (sibs[s] / 10) == (markers_list[l-(FIXED_COL+covariables)]).major_allele )
+							{
+								output_matrix[i+s][l] = HOM_MAJ;
+							}
+							else if ( (sibs[s] / 10) == (markers_list[l-(FIXED_COL+covariables)]).minor_allele )
+							{
+								output_matrix[i+s][l] = HOM_MIN;
+							}
+						}
+					}
+					else if (mark_col == TWO_COL) // Só para testar
+					{
+						for (s=0; s<NUM_SIBS; s++)
+						{
+							output_matrix[i+s][j] = sibs[s] / 10;
+							output_matrix[i+s][j+1] = sibs[s] % 10;
+						}
+					} 
+				}
+				j = j+2;
+				l++;
 			}
-*/
-
-			i++;
+			i = i+3;
 		}
 	}
 
@@ -885,6 +930,87 @@ void output_make()
 
 	print_matrix (output_matrix, num_output, num_col_out);
 }
+
+int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2)
+{
+	int s1a1, s1a2, s2a1, s2a2, s3a1, s3a2, s4a1, s4a2;
+
+	printf("Na make sibs.\n");
+
+	printf("Pai: %d %d, Mae: %d %d, Filho: %d %d\n", fa1, fa2, ma1, ma2, ca1, ca2);
+
+	if ( (fa1 == 0) || (fa2 == 0) || (ma1 == 0) || (ma2 == 0) )
+	{
+		return(1);
+	}
+
+	s1a1 = fa1;
+	s1a2 = ma1;
+
+	s2a1 = fa1;
+	s2a2 = ma2;
+
+	s3a1 = fa2;
+	s3a2 = ma1;
+
+	s4a1 = fa2;
+	s4a2 = ma2;
+
+	if ( (fa1 != fa2) && (ma1 != ma2)) // Pais heterozigotos
+	{
+		if ( ((ca1 == s1a1) && (ca2 == s1a2)) || ((ca2 == s1a1) && (ca1 == s1a2)) )
+		{
+			sibs[0] = s2a1 * 10 + s2a2;
+			sibs[1] = s3a1 * 10 + s3a2;
+			sibs[2] = s4a1 * 10 + s4a2;
+		}
+		else if ( ((ca1 == s2a1) && (ca2 == s2a2)) || ((ca2 == s2a1) && (ca1 == s2a2)) )
+		{
+			sibs[0] = s1a1 * 10 + s1a2;
+			sibs[1] = s3a1 * 10 + s3a2;
+			sibs[2] = s4a1 * 10 + s4a2;
+		}
+		else if ( ((ca1 == s3a1) && (ca2 == s3a2)) || ((ca2 == s3a1) && (ca1 == s3a2)) )
+		{
+			sibs[0] = s2a1 * 10 + s2a2;
+			sibs[1] = s1a1 * 10 + s1a2;
+			sibs[2] = s4a1 * 10 + s4a2;
+		}
+		else
+		{
+			sibs[0] = s2a1 * 10 + s2a2;
+			sibs[1] = s1a1 * 10 + s1a2;
+			sibs[2] = s3a1 * 10 + s3a2;
+		}
+		return(0);
+
+	}
+	else if ( (fa1 == fa2) && (ma1 == ma2) ) //homo
+	{
+		// if (fa1 != ma1) // homo diferentes
+		// if (fa1 == ma1) // homo iguais 
+		// De qualquer forma não é informativo
+		return(1); // não informativo, zera todos os filhos
+	}
+	else // Um pai heterozigoto
+	{
+		if ( ((ca1 == fa1) && (ca2 == fa2)) || ((ca2 == fa2) && (ca1 == fa1)) )
+		{
+			sibs[0] = ma1 *10 + ma2;
+			sibs[1] = 0;
+			sibs[2] = 0;
+		}
+		else
+		{
+			sibs[0] = fa1 *10 + fa2;
+			sibs[1] = 0;
+			sibs[2] = 0;
+		}
+		return(0);
+	}
+}
+
+
 
 
 /* -- Header -- */

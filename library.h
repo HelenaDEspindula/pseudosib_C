@@ -20,6 +20,7 @@
 #define HOM_MAJ 2
 #define HOM_MIN 4
 #define HETOR 3
+#define NUM_SIBS 3
 
 
 /* -- Global variables -- */
@@ -40,6 +41,7 @@ int num_trios;
 int num_output;
 int markers;
 char mark_col;
+int sibs[NUM_SIBS];
 
 typedef struct Markers_t
 {
@@ -100,6 +102,8 @@ void free_all();
 void free_matrix(int ** matrix, int lin_ini, int lin_fin);
 
 void print_matrix (int ** matrix, int max_lin, int max_col);
+
+int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2);
 
 void output_make();
 
