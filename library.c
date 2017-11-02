@@ -4,6 +4,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include "library.h"
+#include "liballoc.h"
+#include "libinout.h"
+#include "global.h"
 
 int compare ( const void *pa, const void *pb ) 
 {
@@ -20,7 +23,7 @@ void sort_by_column (int** matrix, int max_lin, int max_col)
 
 	printf("ordenei\n");
 
-	print_matrix (matrix, max_lin, max_col);
+	//print_matrix (matrix, max_lin, max_col);
 }
 
 void allels_def (int** matrix, int max_lin, int max_col, int last_col)
@@ -138,33 +141,126 @@ void allels_def (int** matrix, int max_lin, int max_col, int last_col)
 			}
 		}
 
-		printf ("rs_markers[ %d ]: major: %d, minor %d.\n", m, (markers_list[m]).major_allele, (markers_list[m]).minor_allele);
+		printf ("%s: \t major = %d, minor = %d.\n", ((markers_list[m]).marker_name), (markers_list[m]).major_allele, (markers_list[m]).minor_allele);
 		m++;
 	}
 
 }
 
 
-int find_trios (int** matrix, int max_lin, int max_col)
+int find_family ()
+{
+	trio_list = malloc_vector_trio (trio_list, (num_ind*TRIO_RATE) );
+
+	find_trios(input_matrix, num_ind, num_col_in);
+
+	output_vector = malloc_vector_natural_sibs (output_vector, num_trios);
+
+	find_natural_sibs (output_vector, num_trios);
+
+	return(num_trios*4 + num_solo);
+}
+
+void find_natural_sibs (int ** vector, int max_lin)
+{
+	int i, t;
+	int v = 0;
+	int lin = max_lin;
+	int more_two = FALSE;
+	
+	for (t=0; t<lin; t++)
+	{
+		for (i=t+1; i<lin; i++)
+		{
+			while ( ((trio_list[t]).father == (trio_list[i]).father) && ((trio_list[t]).mather == (trio_list[i]).mather) )
+			{
+				printf("Achei um irmão natural no trio %d!\n", t);
+
+				if ( (trio_list[t]).child2 == NULL )
+				{
+					(trio_list[t]).child2 = (trio_list[i]).child1;	
+
+					if (i != lin)
+					{
+						(trio_list[i]).father = (trio_list[lin]).father;
+						(trio_list[i]).mather = (trio_list[lin]).mather;
+						(trio_list[i]).child1 = (trio_list[lin]).child1;
+						(trio_list[i]).child2 = NULL;
+
+					}
+
+					lin = lin -1;
+
+					
+				}
+				else if ( (trio_list[t]).child2 != NULL )
+				{
+					more_two = TRUE;
+					(vector[v]) = (trio_list[i]).child1;
+					printf("Vector1[%d] = %p\n", v, (vector[v]));
+					v = v + 1;
+
+					if (i != lin)
+					{
+						(trio_list[i]).father = (trio_list[lin]).father;
+						(trio_list[i]).mather = (trio_list[lin]).mather;
+						(trio_list[i]).child1 = (trio_list[lin]).child1;
+						(trio_list[i]).child2 = NULL;
+					}
+
+					lin = lin -1;
+				}
+			
+
+			}
+		}
+
+		if (more_two == TRUE)
+		{
+			(vector[v]) = (trio_list[t]).child1;
+			printf("Vector2[%d] = %p\n", v, (vector[v]));
+			v = v + 1;
+			(vector[v]) = (trio_list[t]).child2;
+			printf("Vector3[%d] = %p\n", v, (vector[v]));
+			v = v + 1;
+
+			(trio_list[t]).father = (trio_list[lin-1]).father;
+			(trio_list[t]).mather = (trio_list[lin-1]).mather;
+			(trio_list[t]).child1 = (trio_list[lin-1]).child1;
+			(trio_list[t]).child2 = NULL;
+
+			lin = lin -1;
+			more_two = FALSE;
+		}
+
+
+	}
+
+	num_trios = lin;
+	num_solo = v;
+}
+
+
+void find_trios (int** matrix, int max_lin, int max_col) // Coloca os trios na estrutura
 {
 	int i, t;
 	t = 0;
 
-	printf("Entrei achar trios\n");
-
-	trio_list = malloc_vector_trio (trio_list, (max_lin*TRIO_RATE) );
+	//printf("Entrei achar trios\n");
 
 	for(i=0; i < max_lin; i++)
 	{
-		printf("Linha %d: ID = %d, FT = %d, MT = %d \n", i, matrix[i][ID_COL], matrix[i][FT_COL], matrix[i][MT_COL]);
+		//printf("Linha %d: ID = %d, FT = %d, MT = %d \n", i, matrix[i][ID_COL], matrix[i][FT_COL], matrix[i][MT_COL]);
 		if ( (matrix[i][ST_COL] == 2) && (matrix[i][FT_COL] != 0) && (matrix[i][MT_COL] != 0) ) // Se nenhum dos pais é zero
 		{
-
-			(trio_list[t]).child = matrix[i];
-			(trio_list[t]).father = search_id(matrix, max_lin, matrix[i][FT_COL]); // FAZER FUNÇÃO !!!!
+			
+			(trio_list[t]).father = search_id(matrix, max_lin, matrix[i][FT_COL]); 
 			(trio_list[t]).mather = search_id(matrix, max_lin, matrix[i][MT_COL]);
+			(trio_list[t]).child1 = matrix[i];
+			(trio_list[t]).child2 = NULL;
+			(trio_list[t]).mendelian_error = 0;
 
-			printf("Ponteiro f = %p, m = %p\n", (trio_list[t]).father, (trio_list[t]).mather);
+			//printf("Ponteiro f = %p, m = %p\n", (trio_list[t]).father, (trio_list[t]).mather);
 
 			if ( ( (trio_list[t]).father != NULL ) && ( (trio_list[t]).mather != NULL ) ) // Se os pais existem na tabela
 			{
@@ -174,17 +270,17 @@ int find_trios (int** matrix, int max_lin, int max_col)
 				}
 				else
 				{
-					printf("Achei o %d trio:\n c = %d, f = %d, m = %d \n", t, ((trio_list[t]).child)[ID_COL], ((trio_list[t]).father)[ID_COL], ((trio_list[t]).mather)[ID_COL]);
+					//printf("Achei o %d trio:\n c = %d, f = %d, m = %d \n", t, ((trio_list[t]).child1)[ID_COL], ((trio_list[t]).father)[ID_COL], ((trio_list[t]).mather)[ID_COL]);
 					t++;
 				}
 			}
 			else // Se os pais não existem
 			{
-				printf("  Um ou mais pais não estão na tabela\n");
+				//printf("  Um ou mais pais não estão na tabela\n");
 
 				// Futuro caso dos irmãos;
 
-				(trio_list[t]).child = NULL;
+				(trio_list[t]).child1 = NULL;
 				(trio_list[t]).father = NULL;
 				(trio_list[t]).mather = NULL;	
 			}
@@ -192,12 +288,10 @@ int find_trios (int** matrix, int max_lin, int max_col)
 		}
 		else
 		{
-			printf("  Um ou mais pais zerados\n");
+			//printf("  Um ou mais pais zerados\n");
 		}
 	}
-	num_trios = t-1;
-
-	return(num_trios*4);
+	num_trios = t-1; // conferir
 }
 
 
@@ -227,537 +321,12 @@ int * search_id (int** matrix, int max_lin, int query_id)
 }
 
 
-/* -- Input reading -- */
-
-void input_read ()
-{
-	int i = 0;
-	int j = 0;
-	char ch_temp;
-
-	/* -- Assignments -- */
-
-	num_col_in = FIXED_COL + covariables + 2*markers;
-	num_ind = NIND;
-	printf("Num_col_fixo = %d\n", num_col_in);
-
-	/* -- Open imput file to read -- */
-
-	file_in = fopen (name_file_in, "r");
-	if ( ! file_in )
-   {
-		error_screen(9);
-   }
-	printf("Arquivo aberto\n");
-
-	/* -- Malloc rs_markers -- */
-
-	markers_list = malloc_vector_mark (markers_list, markers); 
-
-	/* -- File reading of rs_markers -- */
-
-	for (i=0; i < markers; i++)
-	{
-		fscanf (file_in, "%s", markers_list[i].marker_name );
-		printf ("rs_markers[ %d ] = %s\n", i, (markers_list[i]).marker_name); // Fazer parte de erro
-	}
-
-	/* -- Dynamic allocation of input matrix -- */
-
-	input_matrix = malloc_matrix_int (input_matrix, num_ind, num_col_in); 
-
-	printf("Malloc matriz ponteiro = %p\n", input_matrix);
-
-	/* -- Reading lines of individuals -- */
-
-	fseek (file_in, +1, SEEK_CUR);
-	ch_temp = fgetc (file_in);
-	if (ch_temp == '\n')
-	{
-		ch_temp = fgetc (file_in);
-	}
-	i = 0; // count of lines
-	while ( ch_temp != EOF )
-	{
-		printf("To nesse while\n");
-		while ( (i < num_ind) && (ch_temp != EOF) )
-		{
-			j = 0;
-			while (ch_temp != '\n')
-			{
-				if ( (ch_temp >= '0') && (ch_temp <= '9') )
-				{
-					fseek (file_in, -1, SEEK_CUR);
-					fscanf (file_in, "%d", &input_matrix[i][j]);
-					j++;
-					ch_temp = fgetc (file_in);
-				}
-				else if ( ch_temp == ' ' )
-				{
-					ch_temp = fgetc (file_in);
-					if ( ch_temp == ' ' )
-					{
-						printf ("Error in input file (2 spaces): row = %d, colun = %d", i+2, j+1);
-						free_matrix(input_matrix, ZERO, num_ind);
-						error_screen(12);
-					}
-				}
-				else if ( ch_temp == '\r' )
-				{
-					ch_temp = fgetc (file_in);
-				}
-				else if (ch_temp != '\n')
-				{
-					printf ("Error in input file (not number char): row = %d, colun = %d", i+2, j+1);
-					free_matrix(input_matrix, ZERO, num_ind);
-					error_screen(13);
-				}
-			}
-			if ( j != num_col_in )
-			{
-				printf ("Wrong number of columns in row %d", i+1);
-				free_matrix(input_matrix, ZERO, num_ind);
-				error_screen(14);
-			}
-			i++;
-			ch_temp = fgetc (file_in);
-		}
-				
-		if ( ch_temp != EOF ) // If file content is larger than the matrix -> do realloc of matrix
-		{
-			input_matrix = realloc_matrix_int (input_matrix, (num_ind*2) , num_col_in, i);
-			num_ind = num_ind*2;
-			printf("Realloc matriz ponteiro = %p\n", input_matrix);
-		}
-	
-	}
-	num_ind = i;
-	printf("I FINISHED TO READ THE ENTRY, with %d individuals\n", num_ind);
-}
-
-/* -- Realloc Matrix (int) -- */
-
-int** realloc_matrix_int (int** matrix, int lin , int col, int old_last_lin)
-{
-	int i =0;
-	int **pnt_temp1, **pnt_temp2;
-
-	pnt_temp1 = matrix;
-	pnt_temp2 = (int**) realloc (matrix, ( lin * sizeof (int*)) );
-	printf("Ponteiro antigo = %p, ponteiro novo = %p \n", pnt_temp1, pnt_temp2);
-	printf("Valor ponteiro antigo = %d, valor ponteiro novo = %d \n", **pnt_temp1, **pnt_temp2);
-		
-	if (pnt_temp2 != NULL)
-	{
-		printf("Realloc funcionou\n");
-		matrix=pnt_temp2;
-		printf("fiz\n");
-	}
-	else
-	{
-		printf("erro\n");
-		free_matrix(pnt_temp1, ZERO, num_ind);
-		error_screen(11);
-	}
-	for (i = old_last_lin; i < lin; i++)
-	{
-		matrix[i] = malloc_vector_int (matrix[i], col);
-	}
-	printf("Funcao realloc matriz ponteiro = %p\n", matrix);
-	return(matrix);
-}
-
-/* -- Malloc Matrix (int) -- */
-
-int** malloc_matrix_int (int** matrix, int lin , int col)
-{
-	int i =0;
-
-	matrix = (int**) malloc (lin * sizeof (int*)) ;
-	if ( matrix == NULL ) // Allocation test
-	{
-		error_screen(10);
-	}
-
-	for (i = 0; i < lin; i++)
-	{
-		matrix[i] = malloc_vector_int (matrix[i], col);
-	}
-	printf("Malloc matriz input Ok.\n");
-
-	return(matrix);
-}
-
-/* -- Malloc Vector (Markers_t) -- */
-
-Markers_t * malloc_vector_mark (Markers_t * vector, int col)
-{
-	vector = (Markers_t *) malloc ( col * sizeof (Markers_t)) ;
-	if ( vector == NULL )
-	{
-		error_screen(10);
-	}
-
-	printf("Malloc estruct list markers Ok.\n");
-	return(vector);
-}
-
-/* -- Malloc Vector (int) -- */
-
-int* malloc_vector_int (int* vector, int col)
-{
-	vector = (int*) malloc ( col * sizeof (int)) ;
-	if ( vector == NULL )
-	{
-		error_screen(10);
-	}
-
-	return(vector);
-}
-
-/* -- Malloc Vector (Trio_t) -- */
-
-Trio_t * malloc_vector_trio (Trio_t * vector, int col)
-{
-	vector = (Trio_t *) malloc ( col * sizeof (Trio_t)) ;
-	if ( vector == NULL )
-	{
-		error_screen(10);
-	}
-
-	printf("Malloc estruct list trio Ok.\n");
-	return(vector);
-}
-
-
-
-/* -- Initialization -- */
-
-void initialization (int argc, char **argv)
-{
-	int initial_error = 0;
-
-	initial_error = comand_line (argc, argv);
-
-	if (initial_error == 0) // If comand line ok
-	{
-		printf("Comand line ok.\n");
-	}
-	else
-	{
-		error_screen(initial_error);
-	}
-}
-
-/* -- Comand Line Interpretation -- */
-
-int comand_line (int argc, char **argv)
-{
-	//printf ("Numero de parâmetros: %d\n", argc);
-
-	bool input = false;
-	bool output = false;
-	bool mark = false;
-	bool cov = false;
-	char * extension;
-
-	// Default vallues:
-	missing = '.';
-	separated = ' ';
-	mark_col = ONE_COL;
-	
-	int i = 1;
-	while (i<argc)
-	{
-		//printf ("argv[%d]: %s\n", i, argv[i]);
-
-		if ( (strcmp ("-h", argv[i]) == 0) || (strcmp ("--help", argv[i]) == 0) )
-		{
-			return(1); // Help screen
-		}
-		else if (strcmp ("-i", argv[i]) == 0)
-		{
-			i++;
-			if (argc<=i)
-			{
-				return(4);
-			}
-			extension = strrchr (argv[i], '.');
-			if (extension == NULL)
-			{
-				return(3);
-			}
-			else if (strcmp (".ped", extension) != 0)
-			{
-				return(3);
-			}
-			strcpy (name_file_in, argv[i]);
-			input = true;
-		}
-		else if (strcmp ("-o", argv[i]) == 0)
-		{
-			i++;
-			if (argc<=i)
-			{
-				return(4);
-			}
-			strcpy (name_file_out, argv[i]);
-			output = true;
-		}
-		else if ( (strcmp ("-c", argv[i]) == 0) || (strcmp ("--covariables", argv[i]) == 0) )
-		{
-			i++;
-			if (argc<=i)
-			{
-				return(4);
-			}
-			covariables = atoi (argv[i]);
-			cov = true;
-		}
-		else if ( (strcmp ("-m", argv[i]) == 0) || (strcmp ("--markers", argv[i]) == 0) )
-		{
-			i++;
-			if (argc<=i)
-			{
-				return(4);
-			}
-			markers = atoi (argv[i]);
-			mark = true;
-		}
-		else if ( (strcmp ("-n", argv[i]) == 0) || (strcmp ("--notavailable", argv[i]) == 0) )
-		{
-			i++;
-			if (argc<=i)
-			{
-				return(4);
-			}
-			if (strcmp ("point", argv[i]) == 0)
-			{
-				missing = '.';
-			}
-			else if (strcmp ("na", argv[i]) == 0)
-			{
-				missing = 'n';
-			}
-			else
-			{
-				return(2); // Unknown option vallue
-			}
-		}
-		else if ( (strcmp ("-s", argv[i]) == 0) || (strcmp ("--separated", argv[i]) == 0) )
-		{
-			i++;
-			if (argc<=i)
-			{
-				return(4);
-			}
-			if (strcmp ("space", argv[i]) == 0)
-			{
-				separated = ' ';
-			}
-			else if (strcmp ("tab", argv[i]) == 0)
-			{
-				separated = '\t';
-			}
-			else
-			{
-				return(2); // Unknown option vallue
-			}
-		}
-		else if ( (strcmp ("-g", argv[i]) == 0) || (strcmp ("--genotypes", argv[i]) == 0) )
-		{
-			i++;
-			if (argc<=i)
-			{
-				return(4);
-			}
-			if (strcmp ("1", argv[i]) == 0)
-			{
-				mark_col = 1;
-			}
-			else if (strcmp ("2", argv[i]) == 0)
-			{
-				mark_col = 2;
-			}
-			else
-			{
-				return(2);
-			}
-		}
-		else
-		{
-			return(4); // Unknown option
-		}
-		i++;
-	}
-
-	if ( (input == false) || (output == false) || (mark == false) || (cov == false) ) 
-	// Test if all mandatory are present
-	{
-		return(5); // Mandatory ausent
-	}
-	else
-	{
-		printf ("Input file: %s;\n", name_file_in);
-		printf ("Output file: %s;\n", name_file_out);
-		printf ("Covariables: %d;\n", covariables);
-		printf ("Markers: %d;\n", markers);
-		printf ("Not Available: [%c];\n", missing);
-		printf ("Separated: [%c].\n", separated);
-		printf ("Genotypes in [%d] columns.\n", mark_col);
-
-		return(0); // Initialization ok
-	}
-}
-
-/* -- Error Scren -- */
-
-void error_screen (int error)
-{
-	printf("\n");
-	printf("Closing program due to error: ");
-
-	if ( (error >= 1) && (error <=5) )
-	{
-		if (error != 1)
-		{
-			printf("Problems with the command line. "); // Complementar
-			switch (error)
-			{
-				case 2:
-		    		printf("Unknown option vallue.");
-					break ;
-				case 3:
-		    		printf("Incorrect file type.");
-					break ;
-				case 4:
-		    		printf("Unknown option.");
-					break ;
-				case 5:
-		    		printf("Mandatory option ausent.");
-					break ;
-			}
-			printf("\n");
-		}
-		printf("\n");
-		printf("PseudoSib v %f \n", VERSION);
-		printf("\n");
-		printf("Usage:\n");
-		printf("$ ./pseudosib -i <input.ped> -o <output.txt> -c <int> -m <int> [-h] [-n <string>] [-s <string>] [-g <int>]\n");
-		printf("\n");
-		printf("\n");
-		printf("Options:\n");
-		printf("-h, --help \t \t \t Help screen and software version \n");
-		printf("-c, --covariables <int> \t Number of covariables \n");
-		printf("-m, --markers <int> \t \t Number of markers \n");
-		printf("-n, --notavailable <string> \t 'point' (default) or 'na' \n");
-		printf("-s, --separated <string> \t 'space' (default) or 'tab' \n");
-		printf("-g, --genotypes <int> \t '1' (default) or '2', number of columns used for genotypes in output.\n");
-		printf("\n");
-	}
-
-	switch (error)
-		{
-			case 6:
-       		printf("Error in the coding of allels. Only numbers 1 to 4 allowed.");
-				break;
-			case 7:
-       		printf("Error in the coding of allels. Only binary markers allowed.");
-				break;
-			case 8:
-       		printf(" ");
-				break;
-			case 9:
-       		printf("Error opening file");
-				break;
-			case 10:
-				printf ("Error allocating memory");
-				break;
-			case 11:
-				printf ("Error reallocating memory");
-				break;
-			case 12:
-				printf ("Error in input file");
-				break;
-			case 13:
-				printf ("Error in input file");
-				break;
-			case 14:
-				printf ("Error in input file");
-				break;
-		}
-
-	printf("\n");
-
-	free_all();
-
-	exit(error);
-}
-
-/* -- Print Matrix -- */
-
-void print_matrix (int ** matrix, int max_lin, int max_col)
-{
-	int i, j;
-
-	for (i=0; i<max_lin; i++)
-	{
-		for (j=0; j<max_col-1; j++)
-		{
-			printf("%d ", matrix[i][j]);
-		}
-		printf("%d\n", matrix[i][max_col-1]);
-	}
-
-}
-
-void free_all()
-{
-	if (input_matrix != NULL)
-	{
-		free_matrix(input_matrix, ZERO, num_ind);
-	}
-	if (markers_list != NULL)
-	{
-		free(markers_list);
-		markers_list = NULL;
-	}
-	if (trio_list != NULL)
-	{
-		free(trio_list);
-		trio_list = NULL;
-	}
-	if (output_matrix != NULL)
-	{
-		free_matrix(output_matrix, ZERO, num_output);
-	}
-	printf("Fiz free de tudo.\n");
-}
-
-/* -- Free Matrix -- */
-
-void free_matrix(int ** matrix, int lin_ini, int lin_fin)
-{
-	int i;
-
-	for (i=lin_ini; i<lin_fin; i++)
-	{
-		free( matrix[i] );
-		matrix[i] = NULL;
-	}
-	free( matrix );
-	matrix = NULL;
-
-	printf("Fiz free matriz\n");
-}
-
-
 void output_make()
 {
 	int i, j, t, k, l, s;
 	int info;
 
-	printf("Entrei em output_make.\n");
+	//printf("Entrei em output_make.\n");
 
 	i = 0;
 	t = -1;
@@ -781,10 +350,10 @@ void output_make()
 		if (i%4 == 0)
 		{
 			t++;
-			printf("Linha %d = Filho real do trio %d\n", i, t );
+			//printf("Linha %d = Filho real do trio %d\n", i, t );
 			for(j=0; j<FIXED_COL+covariables; j++)
 			{
-				output_matrix[i][j] = ((trio_list[t]).child)[j];
+				output_matrix[i][j] = ((trio_list[t]).child1)[j];
 			}
 			
 			if (mark_col == ONE_COL)
@@ -795,20 +364,20 @@ void output_make()
 				while (j<num_col_in)
 				{
 
-					if ( ((trio_list[t]).child)[j] != ((trio_list[t]).child)[j + 1] )
+					if ( ((trio_list[t]).child1)[j] != ((trio_list[t]).child1)[j + 1] )
 					{
 						output_matrix[i][l] = HETOR;
 					}
-					else if ( ((trio_list[t]).child)[j] == (markers_list[l-(FIXED_COL+covariables)]).major_allele )
+					else if ( ((trio_list[t]).child1)[j] == (markers_list[l-(FIXED_COL+covariables)]).major_allele )
 					{
 						output_matrix[i][l] = HOM_MAJ;
 					}
-					else if ( ((trio_list[t]).child)[j] == (markers_list[l-(FIXED_COL+covariables)]).minor_allele )
+					else if ( ((trio_list[t]).child1)[j] == (markers_list[l-(FIXED_COL+covariables)]).minor_allele )
 					{
 						output_matrix[i][l] = HOM_MIN;
 					}
 
-					printf("J = %d, L = %d, m = %d\n",j, l, output_matrix[i][l]);
+					//printf("J = %d, L = %d, m = %d\n",j, l, output_matrix[i][l]);
 
 					j = j + 2;
 					l++;
@@ -819,66 +388,74 @@ void output_make()
 			{
 				for(j=FIXED_COL+covariables; j<num_col_out; j++)
 				{
-					output_matrix[i][j] = ((trio_list[t]).child)[j];
+					output_matrix[i][j] = ((trio_list[t]).child1)[j];
 				}
 			}		
-
+/*
 			for(j=0; j<num_col_out;j++)
 			{
 				printf("%d ", output_matrix[i][j]);
 			}
 			printf("\n");
-
+*/
 			i++;
 		}
 		else
 		{
 			for (s=0; s<NUM_SIBS;s++)
 			{
-				printf("Linha %d = Filho virtual do trio %d\n", i, t );
-				output_matrix[i+s][FM_COL] = ((trio_list[t]).child)[FM_COL];
+				//printf("Linha %d = Filho virtual do trio %d\n", i, t );
+				output_matrix[i+s][FM_COL] = ((trio_list[t]).child1)[FM_COL];
 				output_matrix[i+s][ID_COL] = k;
 				k++;
-				output_matrix[i+s][FT_COL] = ((trio_list[t]).child)[FT_COL];
-				output_matrix[i+s][MT_COL] = ((trio_list[t]).child)[MT_COL];
-				output_matrix[i+s][SX_COL] = ((trio_list[t]).child)[SX_COL];
+				output_matrix[i+s][FT_COL] = ((trio_list[t]).child1)[FT_COL];
+				output_matrix[i+s][MT_COL] = ((trio_list[t]).child1)[MT_COL];
+				output_matrix[i+s][SX_COL] = ((trio_list[t]).child1)[SX_COL];
 				output_matrix[i+s][ST_COL] = NOT_AFT;
 				
 				for(j=FIXED_COL; j<FIXED_COL+covariables; j++)
 				{
-					output_matrix[i+s][j] = ((trio_list[t]).child)[j];
+					output_matrix[i+s][j] = ((trio_list[t]).child1)[j];
 				}
 			}
-			
-		
 			
 			j = FIXED_COL + covariables;
 			l = FIXED_COL + covariables;
 			while(j<num_col_in) // por coluna
 			{
-				info = make_sibs( ((trio_list[t]).father)[j], ((trio_list[t]).father)[j+1], ((trio_list[t]).mather)[j], ((trio_list[t]).mather)[j+1], ((trio_list[t]).child)[j], ((trio_list[t]).child)[j+1]);
+				info = make_sibs( ((trio_list[t]).father)[j], ((trio_list[t]).father)[j+1], ((trio_list[t]).mather)[j], ((trio_list[t]).mather)[j+1], ((trio_list[t]).child1)[j], ((trio_list[t]).child1)[j+1]);
 				
 				
 				//printf("Linha(i) = %d, Coluna(j) = %d, Info = %d \n", i, j, info );
 
-				if (info == 1)
+				if (info == 1) // não informativo
 				{
-					printf("Info = 1\n");
+					//printf("Info = 1\n");
+					if (mark_col == ONE_COL) // Só para testar
+					{
+						for(s=-1; s<NUM_SIBS; s++)
+						{
+							output_matrix[i+s][l] = 1;
+						}
+					}
+					else if (mark_col == TWO_COL) // Só para testar
+					{
+						for(s=-1; s<NUM_SIBS; s++)
+						{
+							output_matrix[i+s][j] = 1;
+							output_matrix[i+s][j+1] = 1;
+						}
+					}
+				}
+				else if ( (info == 2) || (info == 3) )// sem informação de genotipo dos pais
+				{
+					//printf("Info = 2 ou 3\n");
 					if (mark_col == ONE_COL) // Só para testar
 					{
 						for(s=-1; s<NUM_SIBS; s++)
 						{
 							output_matrix[i+s][l] = -1;
 						}
-						/*
-						output_matrix[i-1][j] = -1;
-
-						output_matrix[i][j] = -1;
-
-						output_matrix[i+1][j] = -1;
-
-						output_matrix[i+2][j] = -1;
-						*/
 					}
 					else if (mark_col == TWO_COL) // Só para testar
 					{
@@ -888,10 +465,16 @@ void output_make()
 							output_matrix[i+s][j+1] = -1;
 						}
 					}
+					if (info == 3)
+					{
+						(trio_list[t]).mendelian_error = (trio_list[t]).mendelian_error + 1;
+						printf( "Trio = %d, Child = %d, Erros mendelianos = %d\n", t, (((trio_list[t]).child1)[ID_COL]), (trio_list[t]).mendelian_error);
+					}
+
 				}
 				else if (info == 0)
 				{
-					printf("Sibs: %d, %d, %d\n", sibs[0], sibs[1], sibs[2]);
+					//printf("Sibs: %d, %d, %d\n", sibs[0], sibs[1], sibs[2]);
 					if (mark_col == ONE_COL) // Só para testar
 					{
 						for (s=0; s<3; s++)
@@ -935,13 +518,13 @@ int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2)
 {
 	int s1a1, s1a2, s2a1, s2a2, s3a1, s3a2, s4a1, s4a2;
 
-	printf("Na make sibs.\n");
+	//printf("Na make sibs.\n");
 
-	printf("Pai: %d %d, Mae: %d %d, Filho: %d %d\n", fa1, fa2, ma1, ma2, ca1, ca2);
+	//printf("Pai: %d %d, Mae: %d %d, Filho: %d %d\n", fa1, fa2, ma1, ma2, ca1, ca2);
 
 	if ( (fa1 == 0) || (fa2 == 0) || (ma1 == 0) || (ma2 == 0) )
 	{
-		return(1);
+		return(2);
 	}
 
 	s1a1 = fa1;
@@ -976,11 +559,15 @@ int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2)
 			sibs[1] = s1a1 * 10 + s1a2;
 			sibs[2] = s4a1 * 10 + s4a2;
 		}
-		else
+		else if ( ((ca1 == s4a1) && (ca2 == s4a2)) || ((ca2 == s4a1) && (ca1 == s4a2)) )
 		{
 			sibs[0] = s2a1 * 10 + s2a2;
 			sibs[1] = s1a1 * 10 + s1a2;
 			sibs[2] = s3a1 * 10 + s3a2;
+		}
+		else
+		{
+			return(3); // erro mendeliano
 		}
 		return(0);
 
@@ -1010,18 +597,3 @@ int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2)
 	}
 }
 
-
-
-
-/* -- Header -- */
-
-void header()
-{
-	printf ("Caractéristiques du fichier de données à respecter pour la création de pseudogermains (pour chromosome X, utiliser un autre programme):\n");
-	printf (" -> les colonnes doivent être séparées par des espaces ou des tabulations\n");
-	printf (" -> les individus (au maximum 1500) doivent être classés par famille\n");
-	printf (" -> les premières colonnes doivent correspondre à: family_id, id, father_id, mother_id, sex, affected status, covariables (maximum 10), marqueurs (allèle1 allèle2)\n");
-	printf (" -> les id ne doivent pas comporter de caractères alphanumériques(0 si manquant)\n");
-	printf (" -> sex et affected status doivent être codés 1 ou 2 (0 si manquant)\n");
-	printf (" -> les allèles (au maximum 100 marqueurs) doivent être recodés 1 ou 2 (0 si manquant, les males sont codés comme des homozygotes)\n");
-}
