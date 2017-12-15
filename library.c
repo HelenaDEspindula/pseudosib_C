@@ -435,25 +435,6 @@ void output_make()
 					{
 						for(s=-1; s<NUM_SIBS; s++)
 						{
-							output_matrix[i+s][l] = 1;
-						}
-					}
-					else if (mark_col == TWO_COL) // Só para testar
-					{
-						for(s=-1; s<NUM_SIBS; s++)
-						{
-							output_matrix[i+s][j] = 1;
-							output_matrix[i+s][j+1] = 1;
-						}
-					}
-				}
-				else if ( (info == 2) || (info == 3) )// sem informação de genotipo dos pais
-				{
-					//printf("Info = 2 ou 3\n");
-					if (mark_col == ONE_COL) // Só para testar
-					{
-						for(s=-1; s<NUM_SIBS; s++)
-						{
 							output_matrix[i+s][l] = -1;
 						}
 					}
@@ -465,12 +446,46 @@ void output_make()
 							output_matrix[i+s][j+1] = -1;
 						}
 					}
-					if (info == 3)
+				}
+				else if (info == 2) // sem informação de genotipo
+				{
+					if (mark_col == ONE_COL) // Só para testar
 					{
-						(trio_list[t]).mendelian_error = (trio_list[t]).mendelian_error + 1;
-						printf( "Trio = %d, Child = %d, Erros mendelianos = %d\n", t, (((trio_list[t]).child1)[ID_COL]), (trio_list[t]).mendelian_error);
+						for(s=-1; s<NUM_SIBS; s++)
+						{
+							output_matrix[i+s][l] = -2;
+						}
+					}
+					else if (mark_col == TWO_COL) // Só para testar
+					{
+						for(s=-1; s<NUM_SIBS; s++)
+						{
+							output_matrix[i+s][j] = -2;
+							output_matrix[i+s][j+1] = -2;
+						}
 					}
 
+				}
+				else if (info == 3) // erro mendeliano
+				{
+					if (mark_col == ONE_COL) // Só para testar
+					{
+						for(s=-1; s<NUM_SIBS; s++)
+						{
+							output_matrix[i+s][l] = -3;
+						}
+					}
+					else if (mark_col == TWO_COL) // Só para testar
+					{
+						for(s=-1; s<NUM_SIBS; s++)
+						{
+							output_matrix[i+s][j] = -3;
+							output_matrix[i+s][j+1] = -3;
+						}
+					}
+					(trio_list[t]).mendelian_error = (trio_list[t]).mendelian_error + 1;
+					printf( "Trio = %d, Child = %d, Erros mendelianos = %d\n", t, (((trio_list[t]).child1)[ID_COL]), (trio_list[t]).mendelian_error);
+					
 				}
 				else if (info == 0)
 				{
@@ -522,9 +537,9 @@ int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2)
 
 	//printf("Pai: %d %d, Mae: %d %d, Filho: %d %d\n", fa1, fa2, ma1, ma2, ca1, ca2);
 
-	if ( (fa1 == 0) || (fa2 == 0) || (ma1 == 0) || (ma2 == 0) )
+	if ( (fa1 == 0) || (fa2 == 0) || (ma1 == 0) || (ma2 == 0) || (ca1 == 0) || (ca2 == 0) ) 
 	{
-		return(2);
+		return(2); // sem informação de genotipo
 	}
 
 	s1a1 = fa1;
@@ -587,11 +602,15 @@ int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2)
 			sibs[1] = 0;
 			sibs[2] = 0;
 		}
-		else
+		else if ( ((ca1 == ma1) && (ca2 == ma2)) || ((ca2 == ma2) && (ca1 == ma1)) )
 		{
 			sibs[0] = fa1 *10 + fa2;
 			sibs[1] = 0;
 			sibs[2] = 0;
+		}
+		else
+		{
+			return(3); // erro mendeliano
 		}
 		return(0);
 	}
