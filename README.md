@@ -31,11 +31,11 @@ The PED file is a white-space (space OR tab) delimited file, the first six colum
     Sex			(1=male; 2=female; 0=unknown)
     Phenotype		(1=unaffected; 2=affected; 0=missing)
 
-After that comes the columns of Covariables, thei can be either a quantitative trait or a qualitative trait, but only numeric vallues.
+Then there'r columns of Covariables, they can be either a quantitative trait or a qualitative trait, but only numeric vallues.
 Quantitative traits with decimal points must be coded with a period/full-stop character and not a comma, i.e. 2.394 not 2,394.
-There is no pre-set limit for the number of variables, but the number of variables used must be entered in the command line in the argument "-c". The number of qualitative variables should be the same for all individuals.
+There is no preset limit for the number of variables, but the number of variables used must be entered in the command line in the argument "-c". The number of qualitative variables should be the same for all individuals.
 
-Then that comes the columns of Genotypes. Thei should also be white-space delimited; they can be 1,2,3,4 or 0 which is, by default, the missing genotype character. All markers should be biallelic and must have two alleles specified. Either Both alleles should be missing (i.e. 0) or neither.
+Then the columns of Genotypes comes in. They should also be white-space delimited; they can be 1,2,3,4 or 0 which is, by default, the missing genotype character. All markers should be biallelic and must have two alleles specified. Either Both alleles should be missing (i.e. 0) or neither.
 
 2.2.1 Exemple
 
