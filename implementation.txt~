@@ -1,0 +1,25 @@
+Last update: 07/02/2018
+
+1. Initialization (Command line interpretation) - Implemented;
+ 
+2. Input read:
+	2.1. Open and read file - Implemented;
+	2.2. Malloc matrix - Implemented;
+	2.3. Stored data in matrix - Implemented;
+	2.4. Check file - Implemented;
+	2.5. Error in file - Implemented;
+
+3. Processing:
+	3.1. Allele frequencies - Implemented;
+	3.2. Allele error - Implemented;
+	3.2. Sort matrix by column ID - Implemented;
+	3.3. Find families (just trios) and put in vector of structures - Implemented;
+
+4. Output:
+	4.1. Make pseudo-sibings - Implemented;
+	4.2. Print in file - Not performed;
+	4.3. Free of all mallocs - Implemented.
+
+Future improvements:
+ - Make install;
+ - Natural siblings;
