@@ -5,6 +5,10 @@ LDFLAGS = -lm
 
 objs = pseudosib.o library.o liballoc.o libinout.o
 
+ifeq ($(PREFIX),)
+	PREFIX := /usr/bin
+endif
+
 # Regra default
 
 all: pseudosib $(objs)
@@ -35,3 +39,9 @@ clean:
 #remove tudo o que não for código fonte
 purge: clean
 		-rm programa
+
+install: pseudosib
+	install -d $(PREFIX)/
+	install -m 755 pseudosib $(PREFIX)/
+
+

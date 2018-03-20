@@ -6,6 +6,9 @@
 #include <string.h>
 #include <stdbool.h>
 #include "library.h"
+#include "liballoc.h"
+#include "libinout.h"
+#include "global.h"
 
  
 int main (int argc, char **argv, char **envp)
@@ -18,11 +21,11 @@ int main (int argc, char **argv, char **envp)
 
 	sort_by_column (input_matrix, num_ind, num_col_in);	// Ordenação input_matrix
 
-	find_trios (input_matrix, num_ind, num_col_in);	// Coloca os trios na estrutura
+	num_output = find_family ();	
 
-	free_matrix(input_matrix, ZERO, num_ind);
+	output_make();
 
-	// Pseudo-sib (intermediary_matrix -> output_matrix)
+	free_all();
 
 	// Print output_matrix in file
 
