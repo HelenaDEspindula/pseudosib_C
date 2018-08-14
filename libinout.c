@@ -116,7 +116,30 @@ void input_read ()
 	printf("I FINISHED TO READ THE ENTRY, with %d individuals\n", num_ind);
 }
 
+/* -- Output -- */
 
+void output_read (int ** matrix, int max_lin, int max_col)
+{
+	int i, j;
+
+	file_out = fopen (name_file_out, "w");
+
+	if ( ! file_out )
+   {
+		error_screen(9);
+   }
+	printf("Arquivo aberto\n");
+
+
+	for (i=0; i<max_lin; i++)
+	{
+		for (j=0; j<max_col; j++)
+		{
+			fputc   (matrix[i][j], file_out);
+		}
+		fputs   ("\n", file_out);
+	}
+}
 
 
 /* -- Initialization -- */

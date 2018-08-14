@@ -526,7 +526,7 @@ void output_make()
 
 	printf("Imprimindo matriz output.\n");
 
-	print_matrix (output_matrix, num_output, num_col_out);
+	output_read (output_matrix, num_output, num_col_out);
 }
 
 int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2)
