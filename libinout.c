@@ -124,23 +124,38 @@ void output_read (int ** matrix, int max_lin, int max_col)
 
 	file_out = fopen (name_file_out, "w");
 
-	if ( ! file_out )
+	 if ( ! file_out )
    {
 		error_screen(9);
    }
-	printf("Arquivo aberto\n");
+	
+	printf("Arquivo saida aberto\n"); 
 
+	for (i=0; i<max_lin; i++)
+	{
+		for (j=0; j<max_col-1; j++)
+		{
+			fprintf (file_out, "%d ", matrix[i][j]);
+		}
+	
+		fprintf (file_out, "\n");
+	}
 
+/*
 	for (i=0; i<max_lin; i++)
 	{
 		for (j=0; j<max_col; j++)
 		{
-			fputc   (matrix[i][j], file_out);
+			fputc (matrix[i][j], file_out);
 		}
-		fputs   ("\n", file_out);
-	}
-}
+		fputs ("\n", file_out);
+	} */
 
+
+	printf("Fechando arquivo saida\n"); 
+
+	fclose ( file_out );
+}
 
 /* -- Initialization -- */
 

@@ -22,13 +22,15 @@ int main (int argc, char **argv, char **envp)
 
 	sort_by_column (input_matrix, num_ind, num_col_in);	// Ordenação input_matrix
 
-	num_output = find_family ();	
+	num_output = find_family ();
 
 	output_make();
 
 	free_all();
 
 	// Print output_matrix in file
+
+	// output_read (output_matrix, num_output, num_col_out);
 
 	return (0);
 }

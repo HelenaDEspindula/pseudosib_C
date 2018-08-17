@@ -246,7 +246,7 @@ void find_trios (int** matrix, int max_lin, int max_col) // Coloca os trios na e
 	int i, t;
 	t = 0;
 
-	//printf("Entrei achar trios\n");
+	printf("Entrei achar trios\n");
 
 	for(i=0; i < max_lin; i++)
 	{
@@ -270,7 +270,7 @@ void find_trios (int** matrix, int max_lin, int max_col) // Coloca os trios na e
 				}
 				else
 				{
-					//printf("Achei o %d trio:\n c = %d, f = %d, m = %d \n", t, ((trio_list[t]).child1)[ID_COL], ((trio_list[t]).father)[ID_COL], ((trio_list[t]).mather)[ID_COL]);
+					printf("Achei o %d trio:\n c = %d, f = %d, m = %d \n", t, ((trio_list[t]).child1)[ID_COL], ((trio_list[t]).father)[ID_COL], ((trio_list[t]).mather)[ID_COL]);
 					t++;
 				}
 			}
@@ -291,7 +291,7 @@ void find_trios (int** matrix, int max_lin, int max_col) // Coloca os trios na e
 			//printf("  Um ou mais pais zerados\n");
 		}
 	}
-	num_trios = t-1; // conferir
+	num_trios = t; // conferir
 }
 
 
@@ -326,7 +326,7 @@ void output_make()
 	int i, j, t, k, l, s;
 	int info;
 
-	//printf("Entrei em output_make.\n");
+	printf("Entrei em output_make.\n");
 
 	i = 0;
 	t = -1;
@@ -343,14 +343,16 @@ void output_make()
 
 	output_matrix = malloc_matrix_int (output_matrix, num_output, num_col_out);
 
+	printf("i = %d ; num_output = %d ; t = %d ; num_trios = %d. \n", i, num_output, t, num_trios);
+
 	while( (i<num_output) && (t<num_trios) )
 	{
-		//printf("i = %d, iresto4 = %d.\n", i, (i%4));
+		printf("i = %d, iresto4 = %d.\n", i, (i%4));
 
 		if (i%4 == 0)
 		{
 			t++;
-			//printf("Linha %d = Filho real do trio %d\n", i, t );
+			printf("Linha %d = Filho real do trio %d\n", i, t );
 			for(j=0; j<FIXED_COL+covariables; j++)
 			{
 				output_matrix[i][j] = ((trio_list[t]).child1)[j];
@@ -404,7 +406,7 @@ void output_make()
 		{
 			for (s=0; s<NUM_SIBS;s++)
 			{
-				//printf("Linha %d = Filho virtual do trio %d\n", i, t );
+				printf("Linha %d = Filho virtual do trio %d\n", i, t );
 				output_matrix[i+s][FM_COL] = ((trio_list[t]).child1)[FM_COL];
 				output_matrix[i+s][ID_COL] = k;
 				k++;
@@ -526,7 +528,10 @@ void output_make()
 
 	printf("Imprimindo matriz output.\n");
 
-	output_read (output_matrix, num_output, num_col_out);
+	print_matrix (output_matrix, num_output, num_col_out);
+
+	printf("Fim da matriz.\n");
+
 }
 
 int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2)
