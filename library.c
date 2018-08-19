@@ -156,7 +156,7 @@ int find_family ()
 
 	output_vector = malloc_vector_natural_sibs (output_vector, num_trios);
 
-	find_natural_sibs (output_vector, num_trios);
+	// find_natural_sibs (output_vector, num_trios);
 
 	return(num_trios*4 + num_solo);
 }
@@ -343,16 +343,16 @@ void output_make()
 
 	output_matrix = malloc_matrix_int (output_matrix, num_output, num_col_out);
 
-	printf("i = %d ; num_output = %d ; t = %d ; num_trios = %d. \n", i, num_output, t, num_trios);
+	//printf("i = %d ; num_output = %d ; t = %d ; num_trios = %d. \n", i, num_output, t, num_trios);
 
 	while( (i<num_output) && (t<num_trios) )
 	{
-		printf("i = %d, iresto4 = %d.\n", i, (i%4));
+		//printf("i = %d, iresto4 = %d.\n", i, (i%4));
 
 		if (i%4 == 0)
 		{
 			t++;
-			printf("Linha %d = Filho real do trio %d\n", i, t );
+			//printf("Linha %d = Filho real do trio %d\n", i, t );
 			for(j=0; j<FIXED_COL+covariables; j++)
 			{
 				output_matrix[i][j] = ((trio_list[t]).child1)[j];
@@ -406,7 +406,7 @@ void output_make()
 		{
 			for (s=0; s<NUM_SIBS;s++)
 			{
-				printf("Linha %d = Filho virtual do trio %d\n", i, t );
+				//printf("Linha %d = Filho virtual do trio %d\n", i, t );
 				output_matrix[i+s][FM_COL] = ((trio_list[t]).child1)[FM_COL];
 				output_matrix[i+s][ID_COL] = k;
 				k++;
@@ -526,12 +526,13 @@ void output_make()
 		}
 	}
 
+/*
 	printf("Imprimindo matriz output.\n");
 
 	print_matrix (output_matrix, num_output, num_col_out);
 
 	printf("Fim da matriz.\n");
-
+*/
 }
 
 int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2)

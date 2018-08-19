@@ -26,11 +26,9 @@ int main (int argc, char **argv, char **envp)
 
 	output_make();
 
+	output_read (output_matrix, num_output, num_col_out);
+	
 	free_all();
-
-	// Print output_matrix in file
-
-	// output_read (output_matrix, num_output, num_col_out);
 
 	return (0);
 }

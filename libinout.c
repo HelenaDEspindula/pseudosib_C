@@ -133,24 +133,13 @@ void output_read (int ** matrix, int max_lin, int max_col)
 
 	for (i=0; i<max_lin; i++)
 	{
-		for (j=0; j<max_col-1; j++)
+		for (j=0; j<max_col; j++)
 		{
 			fprintf (file_out, "%d ", matrix[i][j]);
 		}
-	
+		fseek (file_out, -1, SEEK_CUR);
 		fprintf (file_out, "\n");
 	}
-
-/*
-	for (i=0; i<max_lin; i++)
-	{
-		for (j=0; j<max_col; j++)
-		{
-			fputc (matrix[i][j], file_out);
-		}
-		fputs ("\n", file_out);
-	} */
-
 
 	printf("Fechando arquivo saida\n"); 
 
