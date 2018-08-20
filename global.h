@@ -2,7 +2,7 @@
 #define __GLOBAL__
 #include <stdio.h>
 #define NAME_TAM 200
-#define VERSION 1.0
+#define VERSION 1.1
 #define NIND 2001
 #define FM_COL 0
 #define ID_COL 1
@@ -23,6 +23,9 @@
 #define NUM_SIBS 3
 #define FALSE 0
 #define TRUE 1
+#define NUMBER 0
+#define PERCENT 1
+
 
 /* -- Global variables -- */
 
@@ -47,6 +50,20 @@ int markers;
 char mark_col;
 int sibs[NUM_SIBS];
 int limit_mend_e;
+char lme_on_off;
+char lme_num_perc;
+float lme_valor;
+int max_lme;
+
+/*
+typedef struct ID_t
+{
+	char id_name [NAME_TAM] ;
+	int *father;
+} ID_t;
+
+*/
+
 
 typedef struct Markers_t
 {

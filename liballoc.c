@@ -113,7 +113,7 @@ int ** malloc_vector_natural_sibs (int ** vector, int lin)
 		error_screen(10);
 	}
 
-	printf("Malloc natural sibs Ok.\n");
+	//printf("Malloc natural sibs Ok.\n");
 	return(vector);
 }
 
@@ -137,7 +137,7 @@ void free_all()
 	{
 		free_matrix(output_matrix, ZERO, num_output);
 	}
-	printf("Fiz free de tudo.\n");
+	//printf("Fiz free de tudo.\n");
 }
 
 /* -- Free Matrix -- */

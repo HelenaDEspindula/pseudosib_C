@@ -26,7 +26,7 @@ int main (int argc, char **argv, char **envp)
 
 	output_make();
 
-	output_read (output_matrix, num_output, num_col_out);
+	output_write (output_matrix, num_output, num_col_out);
 	
 	free_all();
 

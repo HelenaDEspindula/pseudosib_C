@@ -5,7 +5,7 @@
 
 void input_read ();
 
-void output_read (int ** matrix, int max_lin, int max_col);
+void output_write (int ** matrix, int max_lin, int max_col);
 
 void initialization (int argc, char **argv);
 

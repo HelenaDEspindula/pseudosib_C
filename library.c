@@ -21,7 +21,7 @@ void sort_by_column (int** matrix, int max_lin, int max_col)
 {
 	qsort (matrix, max_lin, sizeof matrix[0], compare);
 
-	printf("ordenei\n");
+	//printf("ordenei\n");
 
 	//print_matrix (matrix, max_lin, max_col);
 }
@@ -141,9 +141,10 @@ void allels_def (int** matrix, int max_lin, int max_col, int last_col)
 			}
 		}
 
-		printf ("%s: \t major = %d, minor = %d.\n", ((markers_list[m]).marker_name), (markers_list[m]).major_allele, (markers_list[m]).minor_allele);
+		printf ("\t%s: \t major = %d, minor = %d.\n", ((markers_list[m]).marker_name), (markers_list[m]).major_allele, (markers_list[m]).minor_allele);
 		m++;
 	}
+	printf("\n");
 
 }
 
@@ -151,6 +152,8 @@ void allels_def (int** matrix, int max_lin, int max_col, int last_col)
 int find_family ()
 {
 	trio_list = malloc_vector_trio (trio_list, (num_ind*TRIO_RATE) );
+
+	printf("Counting trios:\n");
 
 	find_trios(input_matrix, num_ind, num_col_in);
 
@@ -246,7 +249,7 @@ void find_trios (int** matrix, int max_lin, int max_col) // Coloca os trios na e
 	int i, t;
 	t = 0;
 
-	printf("Entrei achar trios\n");
+	//printf("Entrei achar trios\n");
 
 	for(i=0; i < max_lin; i++)
 	{
@@ -270,7 +273,7 @@ void find_trios (int** matrix, int max_lin, int max_col) // Coloca os trios na e
 				}
 				else
 				{
-					printf("Achei o %d trio:\n c = %d, f = %d, m = %d \n", t, ((trio_list[t]).child1)[ID_COL], ((trio_list[t]).father)[ID_COL], ((trio_list[t]).mather)[ID_COL]);
+					printf("\tI found the %d trio: c = %d, f = %d, m = %d \n", t + 1, ((trio_list[t]).child1)[ID_COL], ((trio_list[t]).father)[ID_COL], ((trio_list[t]).mather)[ID_COL]);
 					t++;
 				}
 			}
@@ -326,11 +329,12 @@ void output_make()
 	int i, j, t, k, l, s;
 	int info;
 
-	printf("Entrei em output_make.\n");
+	//printf("Entrei em output_make.\n");
+	printf("\nCounting mendelian erros:\n");
 
 	i = 0;
 	t = -1;
-	k = input_matrix[num_ind-1][ID_COL] +1; // Numeração IDs irmãos
+	k = input_matrix[num_ind-1][ID_COL] +1; // Numeração IDs irmãos, a partir do ultimo numero de ID + 1;
 
 	if (mark_col == ONE_COL)
 	{
@@ -486,7 +490,13 @@ void output_make()
 						}
 					}
 					(trio_list[t]).mendelian_error = (trio_list[t]).mendelian_error + 1;
-					printf( "Trio = %d, Child = %d, Erros mendelianos = %d\n", t, (((trio_list[t]).child1)[ID_COL]), (trio_list[t]).mendelian_error);
+					printf( "\tTrio = %d, Child = %d, Mendelian error = %d\n", t, (((trio_list[t]).child1)[ID_COL]), (trio_list[t]).mendelian_error);
+
+					if ( (lme_on_off == TRUE) && (trio_list[t]).mendelian_error > max_lme)
+					{
+						printf( "Essa familia tem erro mendeliano demais = %d\n", (trio_list[t]).mendelian_error );
+					}
+
 					
 				}
 				else if (info == 0)
@@ -588,6 +598,7 @@ int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2)
 		}
 		else
 		{
+			//printf("Erro mend 1\n");
 			return(3); // erro mendeliano
 		}
 		return(0);
@@ -595,10 +606,18 @@ int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2)
 	}
 	else if ( (fa1 == fa2) && (ma1 == ma2) ) //homo
 	{
+		if (ca1 == ca2)
+		{
+			//printf("Erro mend 2\n");
+			return(3); // erro mendeliano
+		}
+		else
+		{
 		// if (fa1 != ma1) // homo diferentes
 		// if (fa1 == ma1) // homo iguais 
 		// De qualquer forma não é informativo
 		return(1); // não informativo, zera todos os filhos
+		}
 	}
 	else // Um pai heterozigoto
 	{
@@ -616,6 +635,7 @@ int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2)
 		}
 		else
 		{
+			//printf("Erro mend 3\n");
 			return(3); // erro mendeliano
 		}
 		return(0);

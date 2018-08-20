@@ -1,4 +1,4 @@
-Last update: 07/02/2018
+Last update: 19/08/2018
 
 1. Initialization (Command line interpretation) - Implemented;
  
@@ -17,9 +17,10 @@ Last update: 07/02/2018
 
 4. Output:
 	4.1. Make pseudo-sibings - Implemented;
-	4.2. Print in file - Not performed;
+	4.2. Print in file - Implementd;
 	4.3. Free of all mallocs - Implemented.
 
 Future improvements:
- - Make install;
  - Natural siblings;
+ - New metods
+ - mendelian error on/off and modif.

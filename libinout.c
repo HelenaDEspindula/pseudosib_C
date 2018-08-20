@@ -29,7 +29,7 @@ void input_read ()
    {
 		error_screen(9);
    }
-	printf("Arquivo aberto\n");
+	printf("Opening input file.\n");
 
 	/* -- Malloc rs_markers -- */
 
@@ -118,7 +118,7 @@ void input_read ()
 
 /* -- Output -- */
 
-void output_read (int ** matrix, int max_lin, int max_col)
+void output_write (int ** matrix, int max_lin, int max_col)
 {
 	int i, j;
 
@@ -129,7 +129,7 @@ void output_read (int ** matrix, int max_lin, int max_col)
 		error_screen(9);
    }
 	
-	printf("Arquivo saida aberto\n"); 
+	printf("\nMaking output file"); 
 
 	for (i=0; i<max_lin; i++)
 	{
@@ -139,9 +139,10 @@ void output_read (int ** matrix, int max_lin, int max_col)
 		}
 		fseek (file_out, -1, SEEK_CUR);
 		fprintf (file_out, "\n");
+		printf("."); 
 	}
 
-	printf("Fechando arquivo saida\n"); 
+	printf(" done\n\n"); 
 
 	fclose ( file_out );
 }
@@ -156,7 +157,7 @@ void initialization (int argc, char **argv)
 
 	if (initial_error == 0) // If comand line ok
 	{
-		printf("Comand line ok.\n");
+		printf("Comand line ok.\n\n");
 	}
 	else
 	{
@@ -180,8 +181,9 @@ int comand_line (int argc, char **argv)
 	missing = '.';
 	separated = ' ';
 	mark_col = ONE_COL;
-	limit_mend_e = MEND_E;
-	
+	lme_on_off = FALSE;
+	lme_valor = 0;
+
 	int i = 1;
 	while (i<argc)
 	{
@@ -300,6 +302,61 @@ int comand_line (int argc, char **argv)
 				return(2);
 			}
 		}
+		else if (strcmp ("--merror", argv[i]) == 0)
+		{
+			i++;
+			if (argc<=i)
+			{
+				return(4);
+			}
+			else if (strcmp ("on", argv[i]) == 0)
+			{
+				//lme_on_off = TRUE;
+				return(17);
+			}
+			else if (strcmp ("off", argv[i]) == 0)
+			{
+				lme_on_off = FALSE;
+			}
+			else
+			{
+				return(2);
+			}
+
+			i++;
+			if (argc<=i)
+			{
+				return(4);
+			}
+			else if (strcmp ("N", argv[i]) == 0)
+			{
+				lme_num_perc = NUMBER;
+				i++;
+				lme_valor = atoi (argv[i]);
+			}
+			else if (strcmp ("P", argv[i]) == 0)
+			{
+				lme_num_perc = PERCENT;
+				i++;
+				if (argc<=i)
+				{
+					return(4);
+				}
+				else if ( atoi (argv[i]) > 100 )
+				{
+					return(15);
+				}
+				else
+				{
+					lme_valor = atoi (argv[i]);
+				}
+			}
+			else
+			{
+				return(2);
+			}
+
+		}
 		else
 		{
 			return(4); // Unknown option
@@ -312,28 +369,72 @@ int comand_line (int argc, char **argv)
 	{
 		return(5); // Mandatory ausent
 	}
+
+	if (lme_valor == 0)
+	{
+		if (markers < 10)
+		{
+			lme_on_off = FALSE;
+		}
+		else
+		{
+			lme_num_perc = PERCENT;
+			lme_valor = 5;
+		}
+	}
+
+
+	if (lme_on_off == TRUE)
+	{
+		if ( (lme_num_perc == NUMBER) && (lme_valor > markers) )
+		{
+			return(16);
+		}
+
+		if (lme_num_perc == NUMBER)
+		{
+			max_lme = lme_valor;
+		}
+		else
+		{
+			max_lme = lme_valor * markers / 100;
+		}
+	}
+
+
+	printf("\n");
+	printf("PseudoSib v %f \n", VERSION);
+	printf("\n");
+	printf("Options:\n");
+	printf ("\tInput file: %s;\n", name_file_in);
+	printf ("\tOutput file: %s;\n", name_file_out);
+	printf ("\tCovariables: %d;\n", covariables);
+	printf ("\tMarkers: %d;\n", markers);
+	printf ("\tNot Available: [%c];\n", missing);
+	printf ("\tSeparated: [%c].\n", separated);
+	printf ("\tGenotypes in output in [%d] columns.\n", mark_col);
+	if (lme_on_off == TRUE)
+	{
+		printf ("\tMendelin erros limit ON, allowed %d per family.\n", max_lme);
+	}
 	else
 	{
-		printf ("Input file: %s;\n", name_file_in);
-		printf ("Output file: %s;\n", name_file_out);
-		printf ("Covariables: %d;\n", covariables);
-		printf ("Markers: %d;\n", markers);
-		printf ("Not Available: [%c];\n", missing);
-		printf ("Separated: [%c].\n", separated);
-		printf ("Genotypes in [%d] columns.\n", mark_col);
-
-		return(0); // Initialization ok
+		printf ("\tMendelin erros limit OFF.\n");
 	}
+
+	return(0); // Initialization ok
+
 }
 
 /* -- Error Scren -- */
+
 
 void error_screen (int error)
 {
 	printf("\n");
 	printf("Closing program due to error: ");
 
-	if ( (error >= 1) && (error <=5) )
+	if ( ( (error >= 1) && (error <=5) ) || (error >= 15) )
 	{
 		if (error != 1)
 		{
@@ -352,6 +453,17 @@ void error_screen (int error)
 				case 5:
 		    		printf("Mandatory option ausent.");
 					break ;
+				
+				case 15:
+					printf("Inappropriate value (greater than 100 percent) for Mendelian errors option.");
+					break ;
+				case 16:
+					printf("Inappropriate value (greater than number of markers) for Mendelian errors option.");
+					break ;
+				case 17:
+					printf("Sorry, this function is not implemented yet.");
+					break ;
+
 			}
 			printf("\n");
 		}
@@ -359,17 +471,22 @@ void error_screen (int error)
 		printf("PseudoSib v %f \n", VERSION);
 		printf("\n");
 		printf("Usage:\n");
-		printf("$ ./pseudosib -i <input.ped> -o <output.txt> -c <int> -m <int> [-h] [-n <string>] [-s <string>] [-g <int>]\n");
+		printf("$ ./pseudosib -i <input.ped> -o <output.txt> -c <int> -m <int> [-h] [-n <string>] [-s <string>] [-g <int>] [--merror <string> <char> <int>]\n");
 		printf("\n");
 		printf("\n");
 		printf("Options:\n");
-		printf("-h, --help \t \t \t Help screen and software version \n");
-		printf("-c, --covariables <int> \t Number of covariables \n");
-		printf("-m, --markers <int> \t \t Number of markers \n");
-		printf("-n, --notavailable <string> \t 'point' (default) or 'na' \n");
-		printf("-s, --separated <string> \t 'space' (default) or 'tab' \n");
+		printf("-h, --help \t \t \t Help screen and software version.\n");
+		printf("-c, --covariables <int> \t Number of covariables (if no covariables use 0).\n");
+		printf("-m, --markers <int> \t \t Number of markers.\n");
+		printf("-n, --notavailable <string> \t 'point' (default) or 'na' in output file.\n");
+		printf("-s, --separated <string> \t 'space' (default) or 'tab' on output file.\n");
 		printf("-g, --genotypes <int> \t \t '1' (default) or '2', number of columns used for genotypes in output.\n");
+		printf("--merror <string> <char> <int> ---> AINDA NÃO IMPLEMENTANDO!\n");
+		printf("\t \t \t  <string>: 'on' (default) or 'off', enable / disable family deletion due to Mendelian errors.\n");
+		printf("\t \t \t  <char>: 'N' or 'P'(default) , check absolute number (N) or percentage (P) of Mendelian errors.\n");
+		printf("\t \t \t  <int>: maximum of Mendelian errors allowed per family (default = 4).\n");
 		printf("\n");
+	
 	}
 
 	switch (error)
@@ -408,7 +525,9 @@ void error_screen (int error)
 	free_all();
 
 	exit(error);
+
 }
+
 
 /* -- Print Matrix -- */
 
