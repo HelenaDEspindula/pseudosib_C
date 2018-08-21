@@ -194,6 +194,7 @@ int comand_line (int argc, char **argv)
 	mark_col = ONE_COL;
 	lme_on_off = FALSE;
 	lme_valor = 0;
+	valor_nao_info = 1;
 
 	int i = 1;
 	while (i<argc)
@@ -419,13 +420,11 @@ int comand_line (int argc, char **argv)
 
 	if (debug_mode == true)
 	{
-		valor_nao_info = -1;
 		valor_erro_mend = -3;
 		valor_sem_genot = -2;
 	}
 	else
 	{
-		valor_nao_info = missing;
 		valor_erro_mend = missing;
 		valor_sem_genot = missing;
 	}
