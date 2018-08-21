@@ -15,7 +15,6 @@ void input_read ()
 	int i = 0;
 	int j = 0;
 	char ch_temp;
-	int number;
 
 	/* -- Assignments -- */
 
@@ -71,6 +70,7 @@ void input_read ()
 				{
 					fseek (file_in, -1, SEEK_CUR);
 					fscanf (file_in, "%d", &input_matrix[i][j]);
+					//printf(" 1) j = %d; mat = %d; ", j, input_matrix[i][j]);
 					j++;
 					ch_temp = fgetc (file_in);
 				}
@@ -79,7 +79,7 @@ void input_read ()
 					ch_temp = fgetc (file_in);
 					if ( ( ch_temp == ' ' ) || ( ch_temp == '\t') )
 					{
-						printf ("Error in input file (2 spaces): row = %d, colun = %d", i+2, j+1);
+						printf ("Error in input file (2 spaces): row = %d, colun = %d. This may be due to a missing value on the line.", i+2, j+1);
 						free_matrix(input_matrix, ZERO, num_ind);
 						error_screen(12);
 					}
@@ -94,10 +94,12 @@ void input_read ()
 					free_matrix(input_matrix, ZERO, num_ind);
 					error_screen(13);
 				}
+			//printf(" 2) j = %d; mat = %d; ", j, input_matrix[i][j]);
 			}
+			//printf("\n");
 			if ( j != num_col_in )
 			{
-				printf ("Wrong number of columns in row %d", i+1);
+				printf ("Wrong number of columns probably on the row %d or its vicinity.", i+2);
 				free_matrix(input_matrix, ZERO, num_ind);
 				error_screen(14);
 			}
