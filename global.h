@@ -54,6 +54,9 @@ char lme_on_off;
 char lme_num_perc;
 float lme_valor;
 int max_lme;
+int valor_nao_info;
+int valor_erro_mend;
+int valor_sem_genot;
 
 /*
 typedef struct ID_t

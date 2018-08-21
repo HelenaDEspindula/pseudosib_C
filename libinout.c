@@ -15,6 +15,7 @@ void input_read ()
 	int i = 0;
 	int j = 0;
 	char ch_temp;
+	int number;
 
 	/* -- Assignments -- */
 
@@ -64,7 +65,7 @@ void input_read ()
 		while ( (i < num_ind) && (ch_temp != EOF) )
 		{
 			j = 0;
-			while (ch_temp != '\n')
+			while ( (ch_temp != '\n') && (ch_temp != EOF) )
 			{
 				if ( (ch_temp >= '0') && (ch_temp <= '9') )
 				{
@@ -73,10 +74,10 @@ void input_read ()
 					j++;
 					ch_temp = fgetc (file_in);
 				}
-				else if ( ch_temp == ' ' )
+				else if ( ( ch_temp == ' ' ) || ( ch_temp == '\t') )
 				{
 					ch_temp = fgetc (file_in);
-					if ( ch_temp == ' ' )
+					if ( ( ch_temp == ' ' ) || ( ch_temp == '\t') )
 					{
 						printf ("Error in input file (2 spaces): row = %d, colun = %d", i+2, j+1);
 						free_matrix(input_matrix, ZERO, num_ind);
@@ -87,7 +88,7 @@ void input_read ()
 				{
 					ch_temp = fgetc (file_in);
 				}
-				else if (ch_temp != '\n')
+				else if ( (ch_temp != '\n') && (ch_temp != EOF) )
 				{
 					printf ("Error in input file (not number char): row = %d, colun = %d", i+2, j+1);
 					free_matrix(input_matrix, ZERO, num_ind);
@@ -135,7 +136,14 @@ void output_write (int ** matrix, int max_lin, int max_col)
 	{
 		for (j=0; j<max_col; j++)
 		{
-			fprintf (file_out, "%d ", matrix[i][j]);
+			if (matrix[i][j] != missing)
+			{
+				fprintf (file_out, "%d ", matrix[i][j]);
+			}
+			else
+			{
+				fprintf (file_out, "%c ", missing);
+			}
 		}
 		fseek (file_out, -1, SEEK_CUR);
 		fprintf (file_out, "\n");
@@ -175,6 +183,7 @@ int comand_line (int argc, char **argv)
 	bool output = false;
 	bool mark = false;
 	bool cov = false;
+	bool debug_mode = false;
 	char * extension;
 
 	// Default vallues:
@@ -302,6 +311,10 @@ int comand_line (int argc, char **argv)
 				return(2);
 			}
 		}
+		else if (strcmp ("--debug", argv[i]) == 0)
+		{
+			debug_mode = true;
+		}
 		else if (strcmp ("--merror", argv[i]) == 0)
 		{
 			i++;
@@ -402,6 +415,19 @@ int comand_line (int argc, char **argv)
 	}
 
 
+	if (debug_mode == true)
+	{
+		valor_nao_info = -1;
+		valor_erro_mend = -3;
+		valor_sem_genot = -2;
+	}
+	else
+	{
+		valor_nao_info = missing;
+		valor_erro_mend = missing;
+		valor_sem_genot = missing;
+	}
+
 	printf("\n");
 	printf("PseudoSib v %f \n", VERSION);
 	printf("\n");
@@ -415,11 +441,18 @@ int comand_line (int argc, char **argv)
 	printf ("\tGenotypes in output in [%d] columns.\n", mark_col);
 	if (lme_on_off == TRUE)
 	{
-		printf ("\tMendelin erros limit ON, allowed %d per family.\n", max_lme);
+		printf ("\tMendelian erros limit ON, allowed %d per family.\n", max_lme);
 	}
 	else
 	{
-		printf ("\tMendelin erros limit OFF.\n");
+		printf ("\tMendelian erros limit OFF.\n");
+	}
+	if (debug_mode == true)
+	{
+		printf ("\tDebug mode is ON:\n");
+		printf ("\t\tValue %d means trio not informative;\n", valor_nao_info);
+		printf ("\t\tValue %d means missing genotype;\n", valor_sem_genot);
+		printf ("\t\tValue %d means mendelian error.\n", valor_erro_mend);
 	}
 
 	return(0); // Initialization ok
@@ -485,6 +518,7 @@ void error_screen (int error)
 		printf("\t \t \t  <string>: 'on' (default) or 'off', enable / disable family deletion due to Mendelian errors.\n");
 		printf("\t \t \t  <char>: 'N' or 'P'(default) , check absolute number (N) or percentage (P) of Mendelian errors.\n");
 		printf("\t \t \t  <int>: maximum of Mendelian errors allowed per family (default = 4).\n");
+		printf("--debug \t \t shows the missing information with different encodings in the output file.\n");
 		printf("\n");
 	
 	}

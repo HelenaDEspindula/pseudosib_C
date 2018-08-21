@@ -441,15 +441,15 @@ void output_make()
 					{
 						for(s=-1; s<NUM_SIBS; s++)
 						{
-							output_matrix[i+s][l] = -1;
+							output_matrix[i+s][l] = valor_nao_info;
 						}
 					}
 					else if (mark_col == TWO_COL) // Só para testar
 					{
 						for(s=-1; s<NUM_SIBS; s++)
 						{
-							output_matrix[i+s][j] = -1;
-							output_matrix[i+s][j+1] = -1;
+							output_matrix[i+s][j] = valor_nao_info;
+							output_matrix[i+s][j+1] = valor_nao_info;
 						}
 					}
 				}
@@ -459,15 +459,15 @@ void output_make()
 					{
 						for(s=-1; s<NUM_SIBS; s++)
 						{
-							output_matrix[i+s][l] = -2;
+							output_matrix[i+s][l] = valor_sem_genot;
 						}
 					}
 					else if (mark_col == TWO_COL) // Só para testar
 					{
 						for(s=-1; s<NUM_SIBS; s++)
 						{
-							output_matrix[i+s][j] = -2;
-							output_matrix[i+s][j+1] = -2;
+							output_matrix[i+s][j] = valor_sem_genot;
+							output_matrix[i+s][j+1] = valor_sem_genot;
 						}
 					}
 
@@ -478,15 +478,15 @@ void output_make()
 					{
 						for(s=-1; s<NUM_SIBS; s++)
 						{
-							output_matrix[i+s][l] = -3;
+							output_matrix[i+s][l] = valor_erro_mend;
 						}
 					}
 					else if (mark_col == TWO_COL) // Só para testar
 					{
 						for(s=-1; s<NUM_SIBS; s++)
 						{
-							output_matrix[i+s][j] = -3;
-							output_matrix[i+s][j+1] = -3;
+							output_matrix[i+s][j] = valor_erro_mend;
+							output_matrix[i+s][j+1] = valor_erro_mend;
 						}
 					}
 					(trio_list[t]).mendelian_error = (trio_list[t]).mendelian_error + 1;
@@ -570,75 +570,68 @@ int make_sibs( int fa1, int fa2, int ma1, int ma2, int ca1, int ca2)
 	s4a1 = fa2;
 	s4a2 = ma2;
 
-	if ( (fa1 != fa2) && (ma1 != ma2)) // Pais heterozigotos
+	if ( ( (ca1 == fa1) && ( (ca2 == ma1) || (ca2 == ma2) ) ) || 
+		( (ca1 == fa2) && ( (ca2 == ma1) || (ca2 == ma2) ) ) || 
+		( (ca2 == fa1) && ( (ca1 == ma1) || (ca1 == ma2) ) ) || 
+		( (ca2 == fa2) && ( (ca1 == ma1) || (ca1 == ma2) ) ) )
 	{
-		if ( ((ca1 == s1a1) && (ca2 == s1a2)) || ((ca2 == s1a1) && (ca1 == s1a2)) )
+		if ( (fa1 != fa2) && (ma1 != ma2)) // Pais heterozigotos
 		{
-			sibs[0] = s2a1 * 10 + s2a2;
-			sibs[1] = s3a1 * 10 + s3a2;
-			sibs[2] = s4a1 * 10 + s4a2;
+			if ( ((ca1 == s1a1) && (ca2 == s1a2)) || ((ca2 == s1a1) && (ca1 == s1a2)) )
+			{
+				sibs[0] = s2a1 * 10 + s2a2;
+				sibs[1] = s3a1 * 10 + s3a2;
+				sibs[2] = s4a1 * 10 + s4a2;
+			}
+			else if ( ((ca1 == s2a1) && (ca2 == s2a2)) || ((ca2 == s2a1) && (ca1 == s2a2)) )
+			{
+				sibs[0] = s1a1 * 10 + s1a2;
+				sibs[1] = s3a1 * 10 + s3a2;
+				sibs[2] = s4a1 * 10 + s4a2;
+			}
+			else if ( ((ca1 == s3a1) && (ca2 == s3a2)) || ((ca2 == s3a1) && (ca1 == s3a2)) )
+			{
+				sibs[0] = s2a1 * 10 + s2a2;
+				sibs[1] = s1a1 * 10 + s1a2;
+				sibs[2] = s4a1 * 10 + s4a2;
+			}
+			else if ( ((ca1 == s4a1) && (ca2 == s4a2)) || ((ca2 == s4a1) && (ca1 == s4a2)) )
+			{
+				sibs[0] = s2a1 * 10 + s2a2;
+				sibs[1] = s1a1 * 10 + s1a2;
+				sibs[2] = s3a1 * 10 + s3a2;
+			}
+			return(0);
+
 		}
-		else if ( ((ca1 == s2a1) && (ca2 == s2a2)) || ((ca2 == s2a1) && (ca1 == s2a2)) )
+		else if ( (fa1 == fa2) && (ma1 == ma2) ) //ambos os pais homozigotos
 		{
-			sibs[0] = s1a1 * 10 + s1a2;
-			sibs[1] = s3a1 * 10 + s3a2;
-			sibs[2] = s4a1 * 10 + s4a2;
+			// if (fa1 != ma1) // homo diferentes
+			// if (fa1 == ma1) // homo iguais 
+			// De qualquer forma não é informativo
+			return(1); // não informativo, zera todos os filhos
 		}
-		else if ( ((ca1 == s3a1) && (ca2 == s3a2)) || ((ca2 == s3a1) && (ca1 == s3a2)) )
+		else // Um pai heterozigoto
 		{
-			sibs[0] = s2a1 * 10 + s2a2;
-			sibs[1] = s1a1 * 10 + s1a2;
-			sibs[2] = s4a1 * 10 + s4a2;
+			if ( ((ca1 == fa1) && (ca2 == fa2)) || ((ca2 == fa2) && (ca1 == fa1)) )
+			{
+				sibs[0] = ma1 *10 + ma2;
+				sibs[1] = 0;
+				sibs[2] = 0;
+			}
+			else if ( ((ca1 == ma1) && (ca2 == ma2)) || ((ca2 == ma2) && (ca1 == ma1)) )
+			{
+				sibs[0] = fa1 *10 + fa2;
+				sibs[1] = 0;
+				sibs[2] = 0;
+			}
+			return(0);
 		}
-		else if ( ((ca1 == s4a1) && (ca2 == s4a2)) || ((ca2 == s4a1) && (ca1 == s4a2)) )
-		{
-			sibs[0] = s2a1 * 10 + s2a2;
-			sibs[1] = s1a1 * 10 + s1a2;
-			sibs[2] = s3a1 * 10 + s3a2;
-		}
-		else
-		{
-			//printf("Erro mend 1\n");
-			return(3); // erro mendeliano
-		}
-		return(0);
 
 	}
-	else if ( (fa1 == fa2) && (ma1 == ma2) ) //homo
+	else
 	{
-		if (ca1 == ca2)
-		{
-			//printf("Erro mend 2\n");
-			return(3); // erro mendeliano
-		}
-		else
-		{
-		// if (fa1 != ma1) // homo diferentes
-		// if (fa1 == ma1) // homo iguais 
-		// De qualquer forma não é informativo
-		return(1); // não informativo, zera todos os filhos
-		}
-	}
-	else // Um pai heterozigoto
-	{
-		if ( ((ca1 == fa1) && (ca2 == fa2)) || ((ca2 == fa2) && (ca1 == fa1)) )
-		{
-			sibs[0] = ma1 *10 + ma2;
-			sibs[1] = 0;
-			sibs[2] = 0;
-		}
-		else if ( ((ca1 == ma1) && (ca2 == ma2)) || ((ca2 == ma2) && (ca1 == ma1)) )
-		{
-			sibs[0] = fa1 *10 + fa2;
-			sibs[1] = 0;
-			sibs[2] = 0;
-		}
-		else
-		{
-			//printf("Erro mend 3\n");
-			return(3); // erro mendeliano
-		}
-		return(0);
+		return(3); // erro mendeliano
 	}
 }
 
